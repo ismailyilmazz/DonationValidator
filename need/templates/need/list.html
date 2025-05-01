@@ -1,0 +1,12 @@
+{% extends "need/base.html" %}
+{% block title %}List{% endblock title %}
+{% block content %}
+{% if len > 0 %}
+{% for need in needs %}
+{{need.name}}<br/>
+{{need.note}}
+{% endfor %}
+{% else %}
+There is no need
+{% endif %}
+{% endblock content %}

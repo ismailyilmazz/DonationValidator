@@ -1,0 +1,18 @@
+{% extends "need/base.html" %}
+{% block title %}Add{% endblock title %}
+{% block content %}
+<form method="POST" style="display:flex;flex-direction:column; gap:1em">
+{% csrf_token %}
+{{form}}
+
+<input type="hidden" name="latitude" id="id_latitude">
+<input type="hidden" name="longitude" id="id_longitude">
+<button class="btn btn-primary">Kaydet</button>
+</form>
+<script>
+    navigator.geolocation.getCurrentPosition(function(position) {
+        document.getElementById('id_latitude').value = position.coords.latitude;
+        document.getElementById('id_longitude').value = position.coords.longitude;
+    });
+</script>
+{% endblock content %}

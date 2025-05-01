@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+
+# Django
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+
+# Sanal ortam
+venv/
+env/
+.venv/
+.env
+.env.*
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migrations (opsiyonel - istersen ignore edebilirsin)
+# */migrations/__pycache__/
+# */migrations/*.pyc
+# */migrations/*.pyo
+
+# Coverage / test
+htmlcov/
+coverage.*
+.tox/
+.pytest_cache/
+
+# Compiled JS/CSS (eğer webpack veya build kullanıyorsan)
+build/
+dist/
+node_modules/

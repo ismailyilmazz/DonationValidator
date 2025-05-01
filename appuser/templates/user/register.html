@@ -1,0 +1,11 @@
+{% extends "user/base.html" %}
+{% block title %}Kayıt Ol{% endblock title %}
+{% block content %}
+
+<form method="POST" style="display:flex;flex-direction:column; gap:1em">
+    {% csrf_token %}
+    {{form}}
+    <button class="btn btn-primary">Kayıt Ol</button>
+</form>
+
+{% endblock content %}
