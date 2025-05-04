@@ -16,3 +16,9 @@ class AddNeedForm(forms.ModelForm):
     class Meta:
         model = Need
         fields = ['name','kind','tel']
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  
+        super().__init__(*args, **kwargs)
+        if user and user.is_authenticated:
+            self.fields.pop('tel') 

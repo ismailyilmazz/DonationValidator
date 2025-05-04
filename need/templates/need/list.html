@@ -1,12 +1,77 @@
-{% extends "need/base.html" %}
-{% block title %}List{% endblock title %}
-{% block content %}
-{% if len > 0 %}
-{% for need in needs %}
-{{need.name}}<br/>
-{{need.note}}
-{% endfor %}
-{% else %}
-There is no need
-{% endif %}
-{% endblock content %}
+{% extends "need/base.html" %} {% block title %}List{% endblock title %} {% block content %}
+<style>
+    .need-item>div{
+        flex-grow:1
+    }
+    .need-date , .need-name, .need-detail{
+        display:flex;
+        flex-direction:column;
+    }
+    .need-name{
+        flex-direction:row;
+        flex-grow:8 !important;
+    }
+    .need-date>p , .need-name>p{
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        margin:0;
+    }
+</style>
+<div class="row">
+  <div class="col-md-9">
+  {% if len > 0 %}
+    <ul class="list-group">
+      {% for need in needs %}
+      <li class="list-group-item need-item" style="display:flex; flex-direction:row;padding:1em">
+        <div class="need-date">
+            <p>{{need.created.day}}</p>
+            <p><b>{{need.month_name}}</b></p>
+        </div>
+        <div class="need-name"> 
+            <p>{{need.name}}</p><p style="margin-left:1em">{{need.kind}}</p>
+        </div>
+        <div class="need-detail">
+            <a href="{{need.created.year}}/{{need.created.month}}/{{need.created.day}}/{{need.slug}}/" class="btn btn-outline-primary">Detay</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %} There is no need {% endif %}
+    <div class="pagination mt-4" style="width: 100%; display: flex; justify-content: center;">
+      <span class="step-links" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+    
+        {% if page_obj.has_previous %}
+          <a href="?page=1" class="btn btn-outline-primary btn-sm">&laquo; İlk</a>
+          <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary btn-sm">Önceki</a>
+        {% endif %}
+    
+        {% for i in page_range %}
+          {% if i == page_obj.number %}
+            <strong class="btn btn-primary btn-sm disabled">{{ i }}</strong>
+          {% else %}
+            <a href="?page={{ i }}" class="btn btn-outline-dark btn-sm">{{ i }}</a>
+          {% endif %}
+        {% endfor %}
+    
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary btn-sm">Sonraki</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary btn-sm">Son &raquo;</a>
+        {% endif %}
+    
+      </span>
+    </div>
+    
+  </div>
+  <div class="col-md-3">
+    <h3>Filtre</h3>
+    <ul style="list-style-type:none">
+      <p class="mb-0">Tür</p>
+      <a href="/"><li>Hepsi</li></a>
+    {% for kind in kinds %}
+      <a href="/kind/{{kind.slug}}"><li>{{kind.name}}</li></a>
+    {% endfor %}
+    </ul>
+  </div>
+  {% endblock content %}
+</div>

@@ -1,0 +1,13 @@
+{% extends "need/base.html" %}
+{% block title %}Detail{% endblock title %}
+{% block content %}
+{% if need != None %}
+{{need.name}}<br>
+{{need.kind}}<br>
+{{need.needy}}<br>
+{{need.status}}<br>
+{{need.address}}<br>
+{% else %}
+İhtiyaç Bulunamadı!!!
+{% endif %}
+{% endblock content %}

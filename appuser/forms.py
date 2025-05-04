@@ -3,7 +3,6 @@ import re
 from .models import AppUser, Role
 from django.core.exceptions import ValidationError,ObjectDoesNotExist
 from django.contrib.auth.models import User
-from django.contrib.auth import login,logout
 
 def validate_phone(value):
     if not re.match(r'^[1-9][0-9]{9}$', value):
@@ -33,16 +32,22 @@ class RegisterForm(forms.ModelForm):
         fields = ['first_name','last_name','tel','email','password']
 
 class LoginForm(forms.ModelForm):
-    tel = forms.CharField(label='Telefon Numarası',max_length=10,min_length=10,validators=[validate_phone],help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
+    username = forms.CharField(label='Telefon Numarası',help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
     password = forms.CharField(max_length=16,widget=forms.PasswordInput)
-    try:   
-        user = User.objects.get(username=tel) 
-        if user.check_password(password):
-            login(user)
-
-    except ObjectDoesNotExist:
-        pass    
 
     class Meta:
         model = AppUser
-        fields = ['tel','password']
+        fields = ['username','password']
+    
+    def loginControl(self):
+        username=self.cleaned_data['username']
+        password = self.cleaned_data['password']
+        try:   
+            user = User.objects.get(username=username) 
+            if user.check_password(password):
+                return user
+            else:
+                return None
+
+        except ObjectDoesNotExist:
+            return None  

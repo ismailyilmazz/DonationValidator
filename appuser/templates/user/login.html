@@ -1,0 +1,11 @@
+{% extends "user/base.html" %}
+{% block title %}Giriş Yap{% endblock title %}
+{% block content %}
+
+<form method="POST" style="display:flex;flex-direction:column; gap:1em">
+    {% csrf_token %}
+    {{form}}
+    <button class="btn btn-primary">Giriş Yap</button>
+</form>
+
+{% endblock content %}
