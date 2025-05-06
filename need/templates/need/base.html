@@ -30,7 +30,7 @@
                     <a href="/user/profile/" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'>{% bs_icon 'person' %}</i> <span class="nav_name">Profil</span> </a> 
                 </div>
             </div> 
-            <a href="#" class="nav_link"> <i class='bx bx-log-out nav_icon'>{% bs_icon 'box-arrow-right' %}</i> <span class="nav_name">Çıkış</span> </a>
+            <a href="/user/logout/" class="nav_link"> <i class='bx bx-log-out nav_icon'>{% bs_icon 'box-arrow-right' %}</i> <span class="nav_name">Çıkış</span> </a>
         </nav>
     </div>        
 
@@ -47,6 +47,38 @@
     {% bootstrap_javascript %}
     {% comment %} <script src="{% static 'js/alertify.min.js'%}"></script> {% endcomment %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <script>
+        const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/");
+        
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log("Gelen tür:", data.type);
+            console.log("Sunucudan:", data.message);
+        };
+    
+        socket.onopen = function() {
+            socket.send(JSON.stringify({ message: "Merhaba!" }));
+        };socket.onopen = function() {
+            socket.send(JSON.stringify({ type: "system", message: "Merhaba!" }));
+        };
+        
+        
+
+        document.addEventListener("keypress", function (e) {
+            console.log("Basılan tuş:", e.key);
+    
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: "keypress",
+                    key: e.key
+                }));
+            }
+            
+        });
+    </script>
+    
+
     <script>
         document.addEventListener("DOMContentLoaded", function(event) {
    

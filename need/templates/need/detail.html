@@ -1,13 +1,17 @@
 {% extends "need/base.html" %}
 {% block title %}Detail{% endblock title %}
 {% block content %}
+<div style="width:100%; padding-top:8em; display:flex; justify-content:center; align-items:center;">
 {% if need != None %}
-{{need.name}}<br>
-{{need.kind}}<br>
-{{need.needy}}<br>
-{{need.status}}<br>
-{{need.address}}<br>
+<div class="card p-4">
+    <h2>{{need.name}}</h2>
+    {{need.kind}}<br>
+    {{need.needy}}<br>
+    {{need.status}}<br>
+    {{need.address}}<br>
+</div>
 {% else %}
 İhtiyaç Bulunamadı!!!
 {% endif %}
+<div>
 {% endblock content %}

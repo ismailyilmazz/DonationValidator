@@ -1,0 +1,57 @@
+{% extends "user/base.html" %}
+{% block title %}Profil{% endblock title %}
+{% block content %}
+<style>
+    .need-item>div{
+        flex-grow:1
+    }
+    .need-date , .need-name, .need-detail{
+        display:flex;
+        flex-direction:column;
+    }
+    .need-name{
+        flex-direction:row;
+        flex-grow:8 !important;
+    }
+    .need-date>p , .need-name>p{
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        margin:0;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-4">
+        <h3>{{user.firstname}} {{user.lastname}}</h3>
+        <div style="display:flex; flex-direction:column; row-gap:1em;">
+            <form method="POST">
+                {% csrf_token %}
+                {{form}}
+                <button class="btn btn-primary mt-2 w-100">Kaydet</button>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-8">
+        {% for need in needs %}
+            <li class="list-group-item need-item" style="display:flex; flex-direction:row;padding:1em">
+                <div class="need-date">
+                    <p>{{need.created.day}}</p>
+                    <p><b>{{need.month_name}}</b></p>
+                </div>
+                <div class="need-name"> 
+                    <p>{{need.name}}</p><p style="margin-left:1em">{{need.kind}}</p>
+                </div>
+                <div class="need-detail">
+                    <a href="/{{need.created.year}}/{{need.created.month}}/{{need.created.day}}/{{need.slug}}/" class="btn btn-outline-primary">Detay</a>
+                </div>
+            </li>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+
+
+{% endblock content %}

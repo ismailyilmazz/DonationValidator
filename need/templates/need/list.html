@@ -1,4 +1,4 @@
-{% extends "need/base.html" %} {% block title %}List{% endblock title %} {% block content %}
+{% extends "need/base.html" %} {% block title %}Liste{% endblock title %} {% block content %}
 <style>
     .need-item>div{
         flex-grow:1
@@ -17,6 +17,12 @@
         align-items:center;
         margin:0;
     }
+    .search-bar-box{
+      display:flex;
+      flex-direction:row;
+      margin-bottom:1em
+    }
+
 </style>
 <div class="row">
   <div class="col-md-9">
@@ -64,6 +70,14 @@
     
   </div>
   <div class="col-md-3">
+
+    <div class="search-bar-box">
+      <input id="searchInput" class="form-control" type="text" placeholder="Ara..." />
+      <button class="btn btn-outline-dark" onclick="search()">Ara</button>
+    </div>
+
+
+
     <h3>Filtre</h3>
     <ul style="list-style-type:none">
       <p class="mb-0">Tür</p>
@@ -73,5 +87,23 @@
     {% endfor %}
     </ul>
   </div>
-  {% endblock content %}
+
 </div>
+<script>
+
+
+  const search = ()=>{
+    const input = document.getElementById('searchInput').value.trim();
+    if (input) {
+        window.location.href = '/search?name=' + encodeURIComponent(input);
+    }
+  }
+
+
+  document.addEventListener('keypress',e=>{
+    if(e.key=='Enter') search();
+    
+  })
+
+</script>
+{% endblock content %}
