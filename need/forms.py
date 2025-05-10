@@ -48,14 +48,19 @@ class AddNeedForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if user and user.is_authenticated:
+            appuser = AppUser.objects.get(user=user)
+            appuser = appuser.all_values()
+            self.fields["first_name"].initial = appuser['first_name']
+            self.fields["last_name"].initial = appuser['last_name']
             try:
-                appuser = AppUser.all_values.get(user=user)
-                self.fields["address"].initial = appuser.address[
+                self.fields["address"].initial = appuser['address'][
                     appuser.current_address
                 ]
-                self.fields.pop("tel")
             except:
-                self.fields.pop("tel")
+                pass
+            self.fields.pop("tel")
+            
+                
 
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
