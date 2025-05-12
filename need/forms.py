@@ -42,7 +42,7 @@ class AddNeedForm(forms.ModelForm):
     class Meta:
         model = Need
         fields = ["first_name", "last_name", "name", "kind", "tel", "address"]
-
+        
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
