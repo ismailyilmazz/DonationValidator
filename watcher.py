@@ -2,8 +2,10 @@ import time
 import subprocess
 import os
 import signal
+import platform
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
+import sys
 
 class RestartHandler(PatternMatchingEventHandler):
     def __init__(self, command, debounce_delay=1.0):
@@ -22,21 +24,40 @@ class RestartHandler(PatternMatchingEventHandler):
         if self.process:
             print("🛑 Sunucu durduruluyor...")
             try:
-                os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+                if platform.system() == "Windows":
+                    self.process.terminate()
+                else:
+                    os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
                 self.process.wait(timeout=1)
             except subprocess.TimeoutExpired:
                 print("⚠️ Zorla öldürülüyor...")
-                os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
+                if platform.system() == "Windows":
+                    self.process.kill()
+                else:
+                    os.killpg(os.getpgid(self.process.pid), signal.SIGKILL)
                 self.process.wait()
+            except Exception as e:
+                print(f"❌ Durdurma hatası: {e}")
 
-        time.sleep(1)  # Portun tam kapanmasını bekle
+        time.sleep(1)  # Portun kapanmasını bekle
         print("🚀 Sunucu başlatılıyor...")
-        self.process = subprocess.Popen(
-            self.command,
-            shell=True,
-            preexec_fn=os.setsid
-        )
-        self.last_event_time = time.time()
+
+        try:
+            if platform.system() == "Windows":
+                self.process = subprocess.Popen(
+                    self.command,
+                    shell=True,
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                )
+            else:
+                self.process = subprocess.Popen(
+                    self.command,
+                    shell=True,
+                    preexec_fn=os.setsid
+                )
+            self.last_event_time = time.time()
+        except Exception as e:
+            print(f"❌ Başlatma hatası: {e}")
 
     def on_modified(self, event):
         now = time.time()
@@ -45,8 +66,11 @@ class RestartHandler(PatternMatchingEventHandler):
             self.restart_server()
 
 if __name__ == "__main__":
-    path = "."  # proje kökü
-    command = "/home/abdullah/okul/venv/bin/daphne odev.asgi:application"
+    path = "."
+    
+    python_executable = sys.executable
+    command = f'"{python_executable}" -m daphne odev.asgi:application'
+
     event_handler = RestartHandler(command)
     observer = Observer()
     observer.schedule(event_handler, path, recursive=True)
@@ -62,7 +86,10 @@ if __name__ == "__main__":
         observer.stop()
         if event_handler.process:
             try:
-                os.killpg(os.getpgid(event_handler.process.pid), signal.SIGTERM)
-            except ProcessLookupError:
-                pass
+                if platform.system() == "Windows":
+                    event_handler.process.terminate()
+                else:
+                    os.killpg(os.getpgid(event_handler.process.pid), signal.SIGTERM)
+            except Exception as e:
+                print(f"❌ Temizleme hatası: {e}")
     observer.join()
