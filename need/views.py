@@ -7,6 +7,11 @@ from django.core.paginator import Paginator
 from django.contrib.auth import login
 from appuser.models import AppUser
 from django.template.defaultfilters import slugify
+from django.http import StreamingHttpResponse
+import csv
+from forms import NeedImportForm
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.dateparse import parse_datetime, parse_date
 
 # Create your views here.
 
@@ -126,3 +131,67 @@ def search_view(request):
     page_range = range(start, end)
 
     return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
+
+#ismail
+def is_admin(user):
+    return user.is_staff or user.is_superuser
+
+@user_passes_test(is_admin)
+def export_offers(request):
+    # TODO: Offer modeli ve alanları hazır olduğunda buraya gerçek csv exportunda ne olacağı ile doldur ve kendi klasörüne taşı efe.
+    resp = StreamingHttpResponse("id,need_id,offered_by,amount,note,created_at\n", content_type="text/csv")
+    resp['Content-Disposition'] = 'attachment; filename="offers.csv"'
+    return resp
+
+@user_passes_test(is_admin)
+def export_needs(request):
+    header = ['id', 'name', 'note', 'status', 'created_at']
+    rows = Need.objects.values_list('id', 'name', 'note', 'status', 'created_at')
+    def row_gen():
+        yield ','.join(header) + '\n'
+        for row in rows:
+            yield ','.join(str(item) for item in row) + '\n'
+
+    resp = StreamingHttpResponse(row_gen(), content_type="text/csv")
+    resp['Content-Disposition'] = 'attachment; filename="needs.csv"'
+    return resp
+
+@user_passes_test(is_admin)
+def import_needs(request):
+    if request.method == "POST":
+        form = NeedImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            f = form.cleaned_data['csv_file']
+            decoded = f.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded)
+
+            # Model alan isimleri listesi (id ve auto-added alanlar hariç)
+            field_names = {
+                f.name: f
+                for f in Need._meta.get_fields()
+                if getattr(f, 'editable', False) and not f.auto_created
+            }
+
+            for row in reader:
+                need = Need()
+                for col, val in row.items():
+                    # CSV’deki başlık modeldeki bir alanla birebir eşleşiyorsa ata
+                    if col in field_names and val != '':
+                        field = field_names[col]
+                        # Tarih/zaman alanıysa parse et
+                        if field.get_internal_type() in ('DateTimeField', 'DateField'):
+                            parsed = (parse_datetime(val) if field.get_internal_type()=='DateTimeField' 
+                                      else parse_date(val))
+                            setattr(need, col, parsed)
+                        else:
+                            setattr(need, col, val)
+                need.save()
+
+            return redirect('need:list')
+    else:
+        form = NeedImportForm()
+
+    return render(request, 'need/import.html', {'form': form})
+
+
+

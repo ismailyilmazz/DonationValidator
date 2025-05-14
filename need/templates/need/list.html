@@ -89,6 +89,19 @@
   </div>
 
 </div>
+
+<!-- ismail -->
+{% if request.user.is_staff %}
+  <div class="admin-tools">
+    <a href="{% url 'need:import' %}"><button>CSV ile İçe Aktar</button></a>
+    <a href="{% url 'need:export_needs' %}"><button>İhtiyaçları Dışa Aktar</button></a>
+    <a href="{% url 'need:export_offers' %}"><button>Teklifleri Dışa Aktar</button></a>
+  </div>
+{% endif %}
+<!-- ismail -->
+
+{% endblock %}
+
 <script>
 
 
