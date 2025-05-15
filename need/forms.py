@@ -66,6 +66,6 @@ class AddNeedForm(forms.ModelForm):
             field.widget.attrs["class"] = "form-control"
 
 #ismail
-class NeedImportForm(forms.form):
+class NeedImportForm(forms.Form):
     csv_file= forms.FileField(label="İhtiyaçlar(CSV)")
 #ismail

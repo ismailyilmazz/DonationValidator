@@ -33,6 +33,15 @@
         </div>
     </div>
     <div class="col-md-8">
+        <!-- ismail -->
+        {% if user.role != "User" %}
+            <div class="admin-tools mb-4 w-100" style="display:flex; justify-content:flex-end; column-gap:1em;">
+                <a class="btn btn-outline-success btn-sm" href="{% url 'need:import' %}">CSV ile İçe Aktar</a>
+                <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_needs' %}">İhtiyaçları Dışa Aktar</a>
+                <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_offers' %}">Teklifleri Dışa Aktar</a>
+            </div>  
+        {% endif %}
+        <!-- ismail -->
         {% for need in needs %}
             <li class="list-group-item need-item" style="display:flex; flex-direction:row;padding:1em">
                 <div class="need-date">

@@ -1,0 +1,12 @@
+{% extends "need/base.html" %}
+{% block Title %}UNAUTHORIZED{% endblock Title %}
+{% block content %}
+    <h3>Bu sayfaya erişim izniniz yok</h3>
+    <h6>Yönlendiriliyorsunuz</h6>
+    <script>
+        setTimeout(()=>{
+            location.pathname = "{{ path|escapejs }}";
+        },2000)
+
+    </script>
+{% endblock content %}
