@@ -5,11 +5,11 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.contrib.auth import login
-from appuser.models import AppUser
+from appuser.models import AppUser,Role
 from django.template.defaultfilters import slugify
 from django.http import StreamingHttpResponse
 import csv
-from forms import NeedImportForm
+from .forms import NeedImportForm
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.dateparse import parse_datetime, parse_date
 
@@ -136,17 +136,25 @@ def search_view(request):
 def is_admin(user):
     return user.is_staff or user.is_superuser
 
-@user_passes_test(is_admin)
 def export_offers(request):
+    if not request.user.is_authenticated:
+        return render(request,"need/unauthorized.html",{"path":"/user/login"})
+    if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
+        return render(request,"need/unauthorized.html",{"path":"/user/login"})
+
     # TODO: Offer modeli ve alanları hazır olduğunda buraya gerçek csv exportunda ne olacağı ile doldur ve kendi klasörüne taşı efe.
     resp = StreamingHttpResponse("id,need_id,offered_by,amount,note,created_at\n", content_type="text/csv")
     resp['Content-Disposition'] = 'attachment; filename="offers.csv"'
     return resp
 
-@user_passes_test(is_admin)
 def export_needs(request):
+    if not request.user.is_authenticated:
+        return render(request,"need/unauthorized.html",{"path":"/user/login"})
+    if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
+        return render(request,"need/unauthorized.html",{"path":"/user/login"})
+
     header = ['id', 'name', 'note', 'status', 'created_at']
-    rows = Need.objects.values_list('id', 'name', 'note', 'status', 'created_at')
+    rows = Need.objects.values_list('id', 'name', 'note', 'status', 'created')
     def row_gen():
         yield ','.join(header) + '\n'
         for row in rows:
@@ -156,8 +164,12 @@ def export_needs(request):
     resp['Content-Disposition'] = 'attachment; filename="needs.csv"'
     return resp
 
-@user_passes_test(is_admin)
 def import_needs(request):
+    if not request.user.is_authenticated:
+        return render(request,"need/unauthorized.html",{"path":"/user/login"})
+    if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
+        return render(request,"need/unauthorized.html",{"path":"/user/login"})
+
     if request.method == "POST":
         form = NeedImportForm(request.POST, request.FILES)
         if form.is_valid():
