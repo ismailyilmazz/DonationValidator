@@ -25,7 +25,7 @@ python manage.py makemigrations need     # need için migration dosyaları oluş
 python manage.py migrate                 # Veritabanı tabloları oluşturulur
 ```
 
-## d. İzleyici (watcher) Scriptini Başlatma
+## 4. İzleyici (watcher) Scriptini Başlatma
 
 ```bash
 python watcher.py  # Dosya değişikliklerini izlemek için başlatılır
