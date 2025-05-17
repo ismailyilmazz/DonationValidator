@@ -1,0 +1,33 @@
+{% extends 'user/base.html' %}
+{% block content %}
+<h2>Account Summary</h2>
+
+
+<div class="card">
+    <h3>Current Role</h3>
+    <p><strong>Role:</strong> {{ appuser.role }}</p>
+    <p><strong>Phone:</strong> {{ appuser.tel }}</p>
+</div>
+
+<hr>
+
+
+<div class="card">
+    <h3>Past Transactions</h3>
+    {% if needs %}
+        <ul>
+            {% for need in needs %}
+                <li>
+                    <strong>{{ need.name }}</strong><br>
+                    {{ need.note }}<br>
+                    <small>{{ need.created|date:"F j, Y, g:i a" }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No transactions found.</p>
+    {% endif %}
+</div>
+
+<a href="/user/profile/">← Back to Profile</a>
+{% endblock %}

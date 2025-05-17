@@ -28,6 +28,8 @@
                     <a href="/" class="nav_link"> <i class='bx bx-user nav_icon'>{% bs_icon 'house-fill' %}</i> <span class="nav_name">Ana menü</span> </a> 
                     <a href="/" class="nav_link"> <i class='bx bx-bookmark nav_icon'>{% bs_icon 'view-list' %}</i> <span class="nav_name">Liste</span> </a> 
                     <a href="/user/profile/" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'>{% bs_icon 'person' %}</i> <span class="nav_name">Profil</span> </a> 
+                    <a href="{% url 'account-summary' %}" class="nav_link"> <i class='bx bx-wallet nav_icon'>{% bs_icon 'person-lines-fill' %}</i> <span class="nav_name">Hesap Özeti</span> 
+</a>
                 </div>
             </div> 
             <a href="/user/logout/" class="nav_link"> <i class='bx bx-log-out nav_icon'>{% bs_icon 'box-arrow-right' %}</i> <span class="nav_name">Çıkış</span> </a>

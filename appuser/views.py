@@ -5,6 +5,7 @@ from .models import AppUser
 from need.models import Need
 from need.views import get_month_name
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -78,3 +79,13 @@ def profile_view(request):
             return render(request,'user/profile.html',{'user':user,'needs':needs,'form':form})
     else:
         return redirect('/user/login/')
+
+@login_required
+def account_summary_view(request):
+    appuser = AppUser.objects.get(user=request.user)
+    needs = Need.objects.filter(needy=request.user).order_by('-created')
+
+    return render(request, 'user/account_summary.html', {
+        'appuser': appuser,
+        'needs': needs
+    })
