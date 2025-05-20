@@ -89,3 +89,6 @@ def account_summary_view(request):
         'appuser': appuser,
         'needs': needs
     })
+
+def stk_page_view(request):
+    return render(request, 'user/stk_page.html')
