@@ -24,7 +24,7 @@ def detail_view(request,year,month,day,slug):
     try:
         need = Need.objects.get(created__year=year,created__month=month,created__day=day,slug=slug)
         if need.needy == request.user or need.donor == request.user or need.status == 'publish':
-            return render(request,'need/detail.html',{'need':need})        
+            return render(request,'need/detail.html',{'need':need})
         return render(request,'need/detail.html',{'need':None})
     except ObjectDoesNotExist:
         return render(request,'need/detail.html',{'need':None})
