@@ -6,7 +6,11 @@ from need.models import Need
 from need.views import get_month_name
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.views import PasswordResetConfirmView
+from .forms import CustomSetPasswordForm
+    
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    form_class = CustomSetPasswordForm
 # Create your views here.
 
 def logout_view(request):
