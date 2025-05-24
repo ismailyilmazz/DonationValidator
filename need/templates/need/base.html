@@ -208,6 +208,7 @@
     </header>
     <div class="l-navbar" id="nav-bar">
         <nav class="nav">
+<<<<<<< HEAD
             <div>
                 <a href="#" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'>{% bs_icon 'layers-fill' %}</i> <span
                         class="nav_logo-name">NAV</span> </a>
@@ -224,6 +225,19 @@
             </div>
             <a href="/user/logout/" class="nav_link"> <i class='bx bx-log-out nav_icon'>{% bs_icon 'box-arrow-right'
                     %}</i> <span class="nav_name">Çıkış</span> </a>
+=======
+            <div> 
+                <a href="#" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'>{% bs_icon 'layers-fill' %}</i> <span class="nav_logo-name">NAV</span> </a>
+                <div class="nav_list"> 
+                    <a href="/" class="nav_link"> <i class='bx bx-user nav_icon'>{% bs_icon 'house-fill' %}</i> <span class="nav_name">Ana menü</span> </a> 
+                    <a href="/" class="nav_link"> <i class='bx bx-bookmark nav_icon'>{% bs_icon 'view-list' %}</i> <span class="nav_name">Liste</span> </a> 
+                    <a href="/user/profile/" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'>{% bs_icon 'person' %}</i> <span class="nav_name">Profil</span> </a>
+                    <a href="/user/account-summary/" class="nav_link"> <i class='bx bx-wallet nav_icon'>{% bs_icon 'person-lines-fill' %}</i><span class="nav_name">Hesap Özeti</span></a>
+                    <a href="/user/stk_page/" class="nav_link"> <i class='bx bx-check-shield nav_icon'>{% bs_icon 'bank' %}</i> <span class="nav_name">STK Mısınız?</span> </a> 
+                </div>
+            </div> 
+            <a href="{% url 'logout_confirm' %}" class="nav_link"> <i class='bx bx-log-out nav_icon'>{% bs_icon 'box-arrow-right' %}</i> <span class="nav_name">Çıkış</span> </a>
+>>>>>>> 50d9253619b4f052a7c0fb8e7a6012d2014469fd
         </nav>
     </div>
 

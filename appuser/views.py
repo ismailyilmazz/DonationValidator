@@ -6,12 +6,20 @@ from need.models import Need, Offer
 from need.views import get_month_name
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.views import PasswordResetConfirmView
+from .forms import CustomSetPasswordForm
+    
+class CustomPasswordResetConfirmView(PasswordResetConfirmView):
+    form_class = CustomSetPasswordForm
 # Create your views here.
 
 def logout_view(request):
     logout(request)
     return redirect('/user/login/')
+
+@login_required
+def logout_confirm_view(request):
+    return render(request, 'user/logout_confirm.html')
 
 def register_view(request):
     if request.method == 'POST':
@@ -102,3 +110,6 @@ def account_summary_view(request):
         'appuser': appuser,
         'needs': needs
     })
+
+def stk_page_view(request):
+    return render(request, 'user/stk_page.html')

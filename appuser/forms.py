@@ -3,6 +3,13 @@ import re
 from .models import AppUser, Role
 from django.core.exceptions import ValidationError,ObjectDoesNotExist
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import SetPasswordForm
+
+class CustomSetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
 
 def validate_phone(value):
     if not re.match(r'^[1-9][0-9]{9}$', value):
