@@ -1,31 +1,31 @@
-{% extends "need/base.html" %} {% block title %}Add{% endblock title %} 
+{% extends "need/base.html" %} {% block title %}Add{% endblock title %}
 {% block content %}
 <form method="POST" style="display: flex; flex-direction: column; gap: 1em">
   {% csrf_token %}
 
   <div class="form-group">
-    {{ form.first_name.label_tag }} {{ form.first_name.as_widget }} 
+    {{ form.first_name.label_tag }} {{ form.first_name.as_widget }}
     {% if form.first_name.errors %}
     <div class="text-danger">{{ form.first_name.errors.0 }}</div>
     {% endif %}
   </div>
 
   <div class="form-group">
-    {{ form.last_name.label_tag }} {{ form.last_name.as_widget }} 
+    {{ form.last_name.label_tag }} {{ form.last_name.as_widget }}
     {% if form.last_name.errors %}
     <div class="text-danger">{{ form.last_name.errors.0 }}</div>
     {% endif %}
   </div>
 
   <div class="form-group">
-    {{ form.name.label_tag }} {{ form.name.as_widget }} 
+    {{ form.name.label_tag }} {{ form.name.as_widget }}
     {% if form.name.errors %}
     <div class="text-danger">{{ form.name.errors.0 }}</div>
     {% endif %}
   </div>
 
   <div class="form-group">
-    {{ form.kind.label_tag }} {{ form.kind.as_widget }} 
+    {{ form.kind.label_tag }} {{ form.kind.as_widget }}
     {% if form.kind.errors %}
     <div class="text-danger">{{ form.kind.errors.0 }}</div>
     {% endif %}
@@ -33,7 +33,7 @@
 
   {% if form.tel %}
   <div class="form-group">
-    {{ form.tel.label_tag }} {{ form.tel.as_widget }} 
+    {{ form.tel.label_tag }} {{ form.tel.as_widget }}
     {% if form.tel.errors %}
     <div class="text-danger">{{ form.tel.errors.0 }}</div>
     {% endif %}
@@ -41,7 +41,7 @@
   {% endif %}
 
   <div class="form-group">
-    {{ form.address.label_tag }} {{ form.address.as_widget }} 
+    {{ form.address.label_tag }} {{ form.address.as_widget }}
     {% if form.address.errors %}
     <div class="text-danger">{{ form.address.errors.0 }}</div>
     {% endif %}
@@ -50,10 +50,10 @@
   <input type="hidden" name="latitude" id="id_latitude" />
   <input type="hidden" name="longitude" id="id_longitude" />
   <button class="btn btn-primary">Kaydet</button>
-<script>
-  navigator.geolocation.getCurrentPosition(function (position) {
-    document.getElementById("id_latitude").value = position.coords.latitude;
-    document.getElementById("id_longitude").value = position.coords.longitude;
-  });
-</script>
-{% endblock content %}
+  <script>
+    navigator.geolocation.getCurrentPosition(function (position) {
+      document.getElementById("id_latitude").value = position.coords.latitude;
+      document.getElementById("id_longitude").value = position.coords.longitude;
+    });
+  </script>
+  {% endblock content %}

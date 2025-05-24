@@ -1,0 +1,80 @@
+{% extends "need/base.html" %}
+{% block title %}Bağış Teklifi{% endblock title %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Bağış Teklifi</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Need Information -->
+                    <div class="alert alert-info">
+                        <h5>Bağış Yapılacak İhtiyaç:</h5>
+                        <p><strong>İhtiyaç:</strong> {{ need.name }}</p>
+                        <p><strong>Kategori:</strong> {{ need.kind }}</p>
+                        <p><strong>İhtiyaç Sahibi:</strong> {{ need.needy.first_name }} {{ need.needy.last_name }}</p>
+                        {% if need.note %}
+                        <p><strong>Not:</strong> {{ need.note }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Offer Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.donor_first_name.id_for_label }}" class="form-label">{{
+                                form.donor_first_name.label }}</label>
+                            {{ form.donor_first_name }}
+                            {% if form.donor_first_name.errors %}
+                            <div class="text-danger">{{ form.donor_first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.donor_last_name.id_for_label }}" class="form-label">{{
+                                form.donor_last_name.label }}</label>
+                            {{ form.donor_last_name }}
+                            {% if form.donor_last_name.errors %}
+                            <div class="text-danger">{{ form.donor_last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.note.id_for_label }}" class="form-label">{{ form.note.label }}</label>
+                            {{ form.note }}
+                            {% if form.note.errors %}
+                            <div class="text-danger">{{ form.note.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            {{ form.confirmed }}
+                            <label class="form-check-label" for="{{ form.confirmed.id_for_label }}">
+                                {{ form.confirmed.label }}
+                            </label>
+                            {% if form.confirmed.errors %}
+                            <div class="text-danger">{{ form.confirmed.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <strong>Dikkat:</strong> Bu teklifi onayladığınızda, ihtiyaç sahibiyle iletişime geçerek
+                            bağışınızı teslim etmeniz gerekmektedir. Lütfen sadece gerçekten yerine getirebileceğiniz
+                            teklifler yapın.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/" class="btn btn-secondary me-md-2">İptal</a>
+                            <button type="submit" class="btn btn-success">Teklifi Gönder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

@@ -54,15 +54,45 @@ class Need(models.Model):
                     break
             super().save(update_fields=["slug"])
 
-
     def get_absolute_url(self):
         return reverse(
             'need:detail_view',
             args=[self.created.year,self.created.month,self.created.day,self.slug]
         )
 
+    def has_pending_offer(self):
+        return self.offers.filter(status='pending').exists()
+
+    def get_pending_offer(self):
+        return self.offers.filter(status='pending').first()
+
     objects = models.Manager()
     publish = PublishManager()
 
     def __str__(self):
         return self.name
+
+
+class Offer(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+    )
+
+    need = models.ForeignKey(Need, on_delete=models.CASCADE, related_name='offers')
+    donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_offers')
+    donor_first_name = models.CharField(max_length=50)
+    donor_last_name = models.CharField(max_length=50)
+    confirmed = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    note = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.donor_first_name} {self.donor_last_name} - {self.need.name}"
+
+    class Meta:
+        ordering = ['-created']

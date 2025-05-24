@@ -1,6 +1,6 @@
-from django.shortcuts import render,redirect
-from .models import Need,Kind
-from .forms import AddNeedForm
+from django.shortcuts import render,redirect, get_object_or_404
+from .models import Need,Kind, Offer
+from .forms import AddNeedForm, OfferForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
@@ -10,8 +10,9 @@ from django.template.defaultfilters import slugify
 from django.http import StreamingHttpResponse
 import csv
 from .forms import NeedImportForm
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.utils.dateparse import parse_datetime, parse_date
+from django.contrib import messages
 
 # Create your views here.
 
@@ -37,13 +38,11 @@ def list_view(request):
     page = paginator.get_page(page_number)
     kinds = list(Kind.objects.all())
 
-
     current = page.number
     total = paginator.num_pages
     start = max(current - 3, 1)
     end = min(current + 3, total) + 1
     page_range = range(start, end)
-
 
     return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
 
@@ -56,13 +55,11 @@ def kind_view(request,slug):
     page = paginator.get_page(page_number)
     kinds = list(Kind.objects.all())
 
-
     current = page.number
     total = paginator.num_pages
     start = max(current - 3, 1)
     end = min(current + 3, total) + 1
     page_range = range(start, end)
-
 
     return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
 
@@ -72,7 +69,6 @@ def create_username(firstname):
     while User.objects.filter(username = username+str(counter)).exists():
         counter +=1
     return username+str(counter)
-
 
 def add_control(tel):
     if AppUser.objects.filter(tel=tel).exists():
@@ -123,7 +119,6 @@ def search_view(request):
     page = paginator.get_page(page_number)
     kinds = list(Kind.objects.all())
 
-
     current = page.number
     total = paginator.num_pages
     start = max(current - 3, 1)
@@ -131,6 +126,58 @@ def search_view(request):
     page_range = range(start, end)
 
     return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
+
+@login_required
+def offer_view(request, need_id):
+    need = get_object_or_404(Need, id=need_id, status='publish')
+    
+    # Check if user is trying to donate to their own need
+    if need.needy == request.user:
+        messages.error(request, 'Kendi ihtiyacınıza bağış yapamazsınız.')
+        return redirect('/')
+    
+    # Check if need already has a pending offer
+    if need.has_pending_offer():
+        messages.error(request, 'Bu ihtiyaç için zaten bekleyen bir teklif var.')
+        return redirect('/')
+    
+    if request.method == 'POST':
+        form = OfferForm(request.POST, user=request.user)
+        if form.is_valid():
+            offer = form.save(commit=False)
+            offer.need = need
+            offer.donor = request.user
+            offer.save()
+            
+            # Update need status
+            need.status = 'donor_find'
+            need.donor = request.user
+            need.save()
+            
+            messages.success(request, 'Bağış teklifiniz başarıyla gönderildi!')
+            return redirect('/')
+    else:
+        form = OfferForm(user=request.user)
+    
+    return render(request, 'need/offer.html', {'form': form, 'need': need})
+
+@login_required
+def mark_received_view(request, need_id):
+    need = get_object_or_404(Need, id=need_id, needy=request.user)
+    
+    if need.status == 'donor_find' and need.has_pending_offer():
+        offer = need.get_pending_offer()
+        offer.status = 'completed'
+        offer.save()
+        
+        need.status = 'complated'
+        need.save()
+        
+        messages.success(request, 'İhtiyacınız tamamlandı olarak işaretlendi!')
+    else:
+        messages.error(request, 'Bu işlem gerçekleştirilemedi.')
+    
+    return redirect('/user/profile')
 
 #ismail
 def is_admin(user):
@@ -142,8 +189,14 @@ def export_offers(request):
     if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
         return render(request,"need/unauthorized.html",{"path":"/user/login"})
 
-    # TODO: Offer modeli ve alanları hazır olduğunda buraya gerçek csv exportunda ne olacağı ile doldur ve kendi klasörüne taşı efe.
-    resp = StreamingHttpResponse("id,need_id,offered_by,amount,note,created_at\n", content_type="text/csv")
+    header = ['id', 'need_id', 'donor_name', 'status', 'created_at']
+    rows = Offer.objects.values_list('id', 'need_id', 'donor__username', 'status', 'created')
+    def row_gen():
+        yield ','.join(header) + '\n'
+        for row in rows:
+            yield ','.join(str(item) for item in row) + '\n'
+
+    resp = StreamingHttpResponse(row_gen(), content_type="text/csv")
     resp['Content-Disposition'] = 'attachment; filename="offers.csv"'
     return resp
 
@@ -187,7 +240,7 @@ def import_needs(request):
             for row in reader:
                 need = Need()
                 for col, val in row.items():
-                    # CSV’deki başlık modeldeki bir alanla birebir eşleşiyorsa ata
+                    # CSV'deki başlık modeldeki bir alanla birebir eşleşiyorsa ata
                     if col in field_names and val != '':
                         field = field_names[col]
                         # Tarih/zaman alanıysa parse et
@@ -204,6 +257,3 @@ def import_needs(request):
         form = NeedImportForm()
 
     return render(request, 'need/import.html', {'form': form})
-
-
-

@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from .forms import RegisterForm, LoginForm, ProfileForm
 from django.contrib.auth import login,logout
 from .models import AppUser
-from need.models import Need
+from need.models import Need, Offer
 from need.views import get_month_name
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -42,7 +42,7 @@ def login_view(request):
 def profile_view(request):
     if request.user.is_authenticated:
         if request.method == 'POST':
-            form = ProfileForm(request.POST,user=request.user)
+            form = ProfileForm(request.POST, user=request.user)
             appuser = AppUser.objects.get(user=request.user)
             user = appuser.all_values()
             needs = Need.objects.filter(needy=request.user)
@@ -57,18 +57,16 @@ def profile_view(request):
             user = User.objects.get(username=request.user.username)
             appuser = AppUser.objects.get(user=user)
 
-            user.first_name=first_name
-            user.last_name=last_name
+            user.first_name = first_name
+            user.last_name = last_name
             user.username = username
             user.email = email
             appuser.tel = tel
 
             user.save()
             appuser.save()
-            login(request,user=user)
+            login(request, user=user)
             return redirect('/user/profile/')
-            
-
 
         else:
             appuser = AppUser.objects.get(user=request.user)
@@ -76,7 +74,22 @@ def profile_view(request):
             needs = Need.objects.filter(needy=request.user)
             get_month_name(needs)
             form = ProfileForm(user=request.user)
-            return render(request,'user/profile.html',{'user':user,'needs':needs,'form':form})
+
+            # New data for context
+            user_needs = Need.objects.filter(needy=request.user).order_by('-created')
+            user_offers = Offer.objects.filter(donor=request.user).order_by('-created')
+
+            return render(
+                request,
+                'user/profile.html',
+                {
+                    'user': user,
+                    'needs': needs,
+                    'form': form,
+                    'user_needs': user_needs,
+                    'user_offers': user_offers,
+                }
+            )
     else:
         return redirect('/user/login/')
 

@@ -1,6 +1,6 @@
 from django import forms
 import re
-from .models import Need, Kind
+from .models import Need, Kind, Offer
 from django.core.exceptions import ValidationError
 from appuser.models import AppUser
 
@@ -59,11 +59,55 @@ class AddNeedForm(forms.ModelForm):
             except:
                 pass
             self.fields.pop("tel")
-            
-                
 
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
+
+
+class OfferForm(forms.ModelForm):
+    donor_first_name = forms.CharField(
+        max_length=50, 
+        label="İsim",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    donor_last_name = forms.CharField(
+        max_length=50, 
+        label="Soyisim",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    confirmed = forms.BooleanField(
+        label="Bu bağışı yapacağımı onaylıyorum",
+        required=True,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    note = forms.CharField(
+        label="Not (İsteğe bağlı)",
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'İsteğe bağlı bir not ekleyebilirsiniz...'
+        })
+    )
+
+    class Meta:
+        model = Offer
+        fields = ['donor_first_name', 'donor_last_name', 'confirmed', 'note']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+        if user and user.is_authenticated:
+            try:
+                appuser = AppUser.objects.get(user=user)
+                appuser_data = appuser.all_values()
+                self.fields["donor_first_name"].initial = appuser_data.get('first_name', user.first_name)
+                self.fields["donor_last_name"].initial = appuser_data.get('last_name', user.last_name)
+            except AppUser.DoesNotExist:
+                self.fields["donor_first_name"].initial = user.first_name
+                self.fields["donor_last_name"].initial = user.last_name
+
 
 #ismail
 class NeedImportForm(forms.Form):
