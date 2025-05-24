@@ -17,6 +17,10 @@ def logout_view(request):
     logout(request)
     return redirect('/user/login/')
 
+@login_required
+def logout_confirm_view(request):
+    return render(request, 'user/logout_confirm.html')
+
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
