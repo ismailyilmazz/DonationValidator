@@ -2,167 +2,209 @@
 {% block title %}Profil{% endblock title %}
 {% block content %}
 <style>
-    .need-item>div {
-        flex-grow: 1
+    .section-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 24px;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
     }
 
-    .need-date,
-    .need-name,
-    .need-detail {
+    .need-item {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .need-item:last-child {
+        border-bottom: none;
+    }
+
+    .need-date {
+        text-align: center;
+        font-weight: bold;
+        width: 60px;
     }
 
     .need-name {
-        flex-direction: row;
-        flex-grow: 8 !important;
+        flex-grow: 1;
+        margin-left: 1rem;
     }
 
-    .need-date>p,
-    .need-name>p {
+    .need-kind {
+        font-size: 0.9em;
+        color: gray;
+    }
+
+    .btn-sm {
+        font-size: 0.8rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.2rem;
+    }
+
+    .input-pair {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0;
+        gap: 1rem;
+    }
+
+    .input-pair > div {
+        flex: 1;
+    }
+
+    .table thead th {
+        background-color: #f5f5f5;
     }
 </style>
 
 <div class="row">
     <div class="col-md-4">
-        <h3>{{user.firstname}} {{user.lastname}}</h3>
-        <div style="display:flex; flex-direction:column; row-gap:1em;">
+        <div class="section-card">
+            <h4 class="mb-3">{{ user.firstname }} {{ user.lastname }}</h4>
             <form method="POST">
                 {% csrf_token %}
-                {{form}}
-                <button class="btn btn-primary mt-2 w-100">Kaydet</button>
+                <div class="form-group input-pair">
+                    <div>{{ form.first_name.label_tag }}{{ form.first_name }}</div>
+                    <div>{{ form.last_name.label_tag }}{{ form.last_name }}</div>
+                </div>
+                <div class="form-group">{{ form.username.label_tag }}{{ form.username }}</div>
+                <div class="form-group">{{ form.email.label_tag }}{{ form.email }}</div>
+                <div class="form-group">{{ form.tel.label_tag }}{{ form.tel }}</div>
+                <button class="btn btn-primary w-100 mt-3">Kaydet</button>
             </form>
         </div>
     </div>
+
     <div class="col-md-8">
-        <!-- ismail -->
-        {% if user.role == "STK" or user.role == "ADMIN" %} <!-- ismail minor change-->
-            <div class="admin-tools mb-4 w-100" style="display:flex; justify-content:flex-end; column-gap:1em;">
-                <a class="btn btn-outline-success btn-sm" href="{% url 'need:import' %}">CSV ile İçe Aktar</a>
-                <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_needs' %}">İhtiyaçları Dışa Aktar</a>
-                <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_offers' %}">Teklifleri Dışa Aktar</a>
-            </div>  
-        {% endif %}
-        <!-- ismail -->
-        {% for need in needs %}
-        <li class="list-group-item need-item" style="display:flex; flex-direction:row;padding:1em">
-            <div class="need-date">
-                <p>{{need.created.day}}</p>
-                <p><b>{{need.month_name}}</b></p>
-            </div>
-            <div class="need-name">
-                <p>{{need.name}}</p>
-                <p style="margin-left:1em">{{need.kind}}</p>
-            </div>
-            <div class="need-detail">
-                <a href="/{{need.created.year}}/{{need.created.month}}/{{need.created.day}}/{{need.slug}}/"
-                    class="btn btn-outline-primary">Detay</a>
-            </div>
-        </li>
-        {% endfor %}
-    </div>
-
-</div>
-
-<div class="row mt-4">
-    <div class="col-12">
-        <h4>İhtiyaçlarım</h4>
-        {% if user_needs %}
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>İhtiyaç</th>
-                        <th>Kategori</th>
-                        <th>Durum</th>
-                        <th>Tarih</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for need in user_needs %}
-                    <tr>
-                        <td>{{ need.name }}</td>
-                        <td>{{ need.kind }}</td>
-                        <td>
-                            {% if need.status == 'publish' %}
-                            <span class="badge bg-success">Aktif</span>
-                            {% elif need.status == 'donor_find' %}
-                            <span class="badge bg-warning">Bağışçı Bulundu</span>
-                            {% elif need.status == 'complated' %}
-                            <span class="badge bg-primary">Tamamlandı</span>
-                            {% else %}
-                            <span class="badge bg-secondary">{{ need.get_status_display }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ need.created|date:"d.m.Y" }}</td>
-                        <td>
-                            <a href="{{ need.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Detay</a>
-                            {% if need.status == 'donor_find' and need.has_pending_offer %}
-                            <a href="{% url 'need:mark_received' need.id %}" class="btn btn-sm btn-success"
-                                onclick="return confirm('Bu ihtiyacı teslim aldığınızı onaylıyor musunuz?')">
-                                Teslim Aldım
-                            </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        {% if user.role == "STK" or user.role == "ADMIN" %}
+        <div class="section-card d-flex justify-content-end gap-2">
+            <a class="btn btn-outline-success btn-sm" href="{% url 'need:import' %}">CSV ile İçe Aktar</a>
+            <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_needs' %}">İhtiyaçları Dışa Aktar</a>
+            <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_offers' %}">Teklifleri Dışa Aktar</a>
         </div>
-        {% else %}
-        <p class="text-muted">Bir ihtiyaç belirtmediniz.</p>
         {% endif %}
-    </div>
-</div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <h4>Bağış Tekliflerim</h4>
-        {% if user_offers %}
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>İhtiyaç</th>
-                        <th>İhtiyaç Sahibi</th>
-                        <th>Durum</th>
-                        <th>Tarih</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for offer in user_offers %}
-                    <tr>
-                        <td>{{ offer.need.name }}</td>
-                        <td>{{ offer.need.needy.first_name }} {{ offer.need.needy.last_name }}</td>
-                        <td>
-                            {% if offer.status == 'pending' %}
-                            <span class="badge bg-warning">Beklemede</span>
-                            {% elif offer.status == 'completed' %}
-                            <span class="badge bg-success">Tamamlandı</span>
-                            {% else %}
-                            <span class="badge bg-secondary">{{ offer.get_status_display }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ offer.created|date:"d.m.Y" }}</td>
-                        <td>
-                            <a href="{{ offer.need.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Detay</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="section-card">
+            <h5>Son İhtiyaçlar</h5>
+            {% for need in needs %}
+            <div class="need-item">
+                <div class="need-date">
+                    {{ need.created.day }}<br><small>{{ need.month_name }}</small>
+                </div>
+                <div class="need-name">
+                    <strong>{{ need.name }}</strong><br>
+                    <span class="need-kind">{{ need.kind }}</span>
+                </div>
+                <a href="{{ need.get_absolute_url }}" class="btn btn-outline-primary btn-sm">Detay</a>
+            </div>
+            {% empty %}
+            <p class="text-muted">Henüz bir ihtiyaç eklenmemiş.</p>
+            {% endfor %}
         </div>
-        {% else %}
-        <p class="text-muted">Henüz bir bağış teklifi yapmadınız.</p>
-        {% endif %}
     </div>
 </div>
 
+<div class="row">
+    <div class="col-12">
+        <div class="section-card">
+            <h5>İhtiyaçlarım</h5>
+            {% if user_needs %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>İhtiyaç</th>
+                            <th>Kategori</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for need in user_needs %}
+                        <tr>
+                            <td>{{ need.name }}</td>
+                            <td>{{ need.kind }}</td>
+                            <td>
+                                {% if need.status == 'publish' %}
+                                <span class="badge bg-success">Aktif</span>
+                                {% elif need.status == 'donor_find' %}
+                                <span class="badge bg-warning">Bağışçı Bulundu</span>
+                                {% elif need.status == 'completed' %}
+                                <span class="badge bg-primary">Tamamlandı</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ need.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ need.created|date:"d.m.Y" }}</td>
+                            <td>
+                                <a href="{{ need.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Detay</a>
+                                {% if need.status == 'donor_find' and need.has_pending_offer %}
+                                <a href="{% url 'need:mark_received' need.id %}" class="btn btn-sm btn-success"
+                                   onclick="return confirm('Bu ihtiyacı teslim aldığınızı onaylıyor musunuz?')">
+                                    Teslim Aldım
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">İhtiyaç listesi boş.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
-{% endblock content %}
+<div class="row">
+    <div class="col-12">
+        <div class="section-card">
+            <h5>Bağış Tekliflerim</h5>
+            {% if user_offers %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>İhtiyaç</th>
+                            <th>İhtiyaç Sahibi</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for offer in user_offers %}
+                        <tr>
+                            <td>{{ offer.need.name }}</td>
+                            <td>{{ offer.need.needy.first_name }} {{ offer.need.needy.last_name }}</td>
+                            <td>
+                                {% if offer.status == 'pending' %}
+                                <span class="badge bg-warning">Beklemede</span>
+                                {% elif offer.status == 'completed' %}
+                                <span class="badge bg-success">Tamamlandı</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ offer.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ offer.created|date:"d.m.Y" }}</td>
+                            <td>
+                                <a href="{{ offer.need.get_absolute_url }}" class="btn btn-sm btn-outline-primary">Detay</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">Henüz bir teklif yapılmamış.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

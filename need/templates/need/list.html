@@ -55,6 +55,14 @@
     background-color: #fff3cd;
     color: #856404;
   }
+  .filter-box a{
+    text-decoration:none;
+    color:black;
+  }
+  .filter-box a:hover{
+    color:rgba(0,0,0,0.8);
+  }
+
 </style>
 
 {% if messages %}
@@ -166,14 +174,14 @@
     </div>
 
     <h3>Filtre</h3>
-    <ul style="list-style-type:none">
-      <p class="mb-0">Tür</p>
+    <ul class="filter-box list-group" style="list-style-type:none;">
+      <p class="mb-2 text-danger">Tür</p>
       <a href="/">
-        <li>Hepsi</li>
+        <li class="list-group-item">Hepsi</li>
       </a>
       {% for kind in kinds %}
       <a href="/kind/{{ kind.slug }}">
-        <li>{{ kind.name }}</li>
+        <li class="list-group-item">{{ kind.name }}</li>
       </a>
       {% endfor %}
     </ul>

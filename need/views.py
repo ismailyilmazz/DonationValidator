@@ -113,10 +113,17 @@ def add_view(request):
             tel = request.POST.get('tel')
             try:
                 add_control(tel=tel)
+                try:
+                    role = Role.objects.get(slug="user")
+                except Role.DoesNotExist:
+                    role = Role(name="User", slug="user")
+                    role.save()
                 user = User(username=create_username(firstname=first_name),password=tel,first_name=first_name,last_name=last_name)
                 user.save()
-                AppUser.objects.create(tel=tel,user=user)
+                AppUser.objects.create(tel=tel,user=user,role=role)
                 login(request=request,user=user)
+                latitude = latitude if latitude else 0
+                longitude = longitude if longitude else 0
                 need = Need(latitude=latitude,longitude=longitude,name=name,kind=kind,needy=user)
                 need.save()
             except ValidationError as e:

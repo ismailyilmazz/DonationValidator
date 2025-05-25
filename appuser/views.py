@@ -50,59 +50,56 @@ def login_view(request):
         return render(request,'user/login.html',{'form':form})
     return redirect('/user/profile/')
 
+from django.contrib import messages
+
 def profile_view(request):
-    if request.user.is_authenticated:
-        if request.method == 'POST':
-            form = ProfileForm(request.POST, user=request.user)
-            appuser = AppUser.objects.get(user=request.user)
-            user = appuser.all_values()
-            needs = Need.objects.filter(needy=request.user)
-            get_month_name(needs)
-
-            first_name = request.POST.get('first_name')
-            last_name = request.POST.get('last_name')
-            username = request.POST.get('username')
-            tel = request.POST.get('tel')
-            email = request.POST.get('email')
-
-            user = User.objects.get(username=request.user.username)
-            appuser = AppUser.objects.get(user=user)
-
-            user.first_name = first_name
-            user.last_name = last_name
-            user.username = username
-            user.email = email
-            appuser.tel = tel
-
-            user.save()
-            appuser.save()
-            login(request, user=user)
-            return redirect('/user/profile/')
-
-        else:
-            appuser = AppUser.objects.get(user=request.user)
-            user = appuser.all_values()
-            needs = Need.objects.filter(needy=request.user)
-            get_month_name(needs)
-            form = ProfileForm(user=request.user)
-
-            # New data for context
-            user_needs = Need.objects.filter(needy=request.user).order_by('-created')
-            user_offers = Offer.objects.filter(donor=request.user).order_by('-created')
-
-            return render(
-                request,
-                'user/profile.html',
-                {
-                    'user': user,
-                    'needs': needs,
-                    'form': form,
-                    'user_needs': user_needs,
-                    'user_offers': user_offers,
-                }
-            )
-    else:
+    if not request.user.is_authenticated:
         return redirect('/user/login/')
+
+    appuser = AppUser.objects.get(user=request.user)
+    user_needs = Need.objects.filter(needy=request.user).order_by('-created')
+    user_offers = Offer.objects.filter(donor=request.user).order_by('-created')
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, user=request.user)
+        if form.is_valid():
+            # Kullanıcı bilgilerini güncelle
+            user = request.user
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.username = form.cleaned_data['username']
+            user.email = form.cleaned_data['email']
+            user.save()
+
+            # AppUser bilgilerini güncelle
+            appuser.tel = form.cleaned_data['tel']
+            appuser.save()
+
+            login(request, user=user)  # Kullanıcıyı yeniden oturum açtır
+            messages.success(request, "Profil başarıyla güncellendi.")
+            return redirect('/user/profile/')
+        else:
+            messages.error(request, "Lütfen formdaki hataları düzeltin.")
+
+    else:
+        form = ProfileForm(user=request.user)
+
+    user_dict = appuser.all_values()
+    needs = Need.objects.filter(needy=request.user)
+    get_month_name(needs)  # Burası tanımlıysa devam
+
+    return render(
+        request,
+        'user/profile.html',
+        {
+            'user': user_dict,
+            'needs': needs,
+            'form': form,
+            'user_needs': user_needs,
+            'user_offers': user_offers,
+        }
+    )
+
 
 @login_required
 def account_summary_view(request):

@@ -1,19 +1,125 @@
 {% extends "need/base.html" %}
 {% block content %}
+<style>
+  .form-material .form-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .form-material .form-control {
+    border: none;
+    border-bottom: 2px solid #ced4da;
+    border-radius: 0;
+    background-color: transparent;
+    transition: border-color 0.3s;
+    box-shadow: none;
+  }
+
+  .form-material .form-control:focus {
+    border-color: #3f51b5;
+    box-shadow: none;
+  }
+
+  .card-header {
+    background-color: #3f51b5;
+    color: white;
+  }
+
+  .btn-save {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  .btn-cancel {
+    border-color: #3f51b5;
+    color: #3f51b5;
+  }
+
+  .btn-cancel:hover {
+    background-color: #3f51b5;
+    color: white;
+  }
+
+  .error-text {
+    font-size: 0.8rem;
+    color: #e53935;
+  }
+</style>
+
 <div class="container py-5">
-  <h2>Kullanıcı Düzenle: {{ appuser_form.instance.user.username }}</h2>
-  <form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-      <h5>Kullanıcı Bilgileri</h5>
-      {{ user_form.as_p }}
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header">
+          <h4 class="mb-0"><i class="bi bi-person-fill me-2"></i> Kullanıcı Düzenle: {{ appuser_form.instance.user.username|title }}</h4>
+        </div>
+        <div class="card-body">
+          <form method="post" class="form-material">
+            {% csrf_token %}
+
+            <h5 class="mb-3">Kullanıcı Bilgileri</h5>
+            <div class="row g-4">
+              <div class="col-md-6">
+                <label class="form-label">{{ user_form.first_name.label }}</label>
+                {{ user_form.first_name }}
+                {% if user_form.first_name.errors %}
+                <div class="error-text">{{ user_form.first_name.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ user_form.last_name.label }}</label>
+                {{ user_form.last_name }}
+                {% if user_form.last_name.errors %}
+                <div class="error-text">{{ user_form.last_name.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">{{ user_form.username.label }}</label>
+                {{ user_form.username }}
+                {% if user_form.username.errors %}
+                <div class="error-text">{{ user_form.username.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">{{ user_form.email.label }}</label>
+                {{ user_form.email }}
+                {% if user_form.email.errors %}
+                <div class="error-text">{{ user_form.email.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">Ek Bilgiler</h5>
+            <div class="row g-4">
+              {% for field in appuser_form %}
+              <div class="col-12">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="error-text">{{ field.errors }}</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+              <button type="submit" class="btn btn-success btn-save me-2">
+                <i class="bi bi-check-circle"></i> Kaydet
+              </button>
+              <a href="{% url 'user:user_list' %}" class="btn btn-danger btn-cancel">
+                <i class="bi bi-x-circle"></i> İptal
+              </a>
+            </div>
+
+          </form>
+        </div>
+      </div>
     </div>
-    <div class="mb-3">
-      <h5>Ek Bilgiler</h5>
-      {{ appuser_form.as_p }}
-    </div>
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a href="{% url 'user:user_list' %}" class="btn btn-secondary">İptal</a>
-  </form>
+  </div>
 </div>
 {% endblock %}

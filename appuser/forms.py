@@ -31,31 +31,44 @@ def validate_phone(value):
     if not re.match(r'^[1-9][0-9]{9}$', value):
         raise ValidationError("Telefon numarası 0 ile başlayamaz ve en fazla 10 haneli olmalıdır.")
 
-
 class ProfileForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=20,label='İsim')
-    last_name = forms.CharField(max_length=20,label='Soyisim')
-    username = forms.CharField(max_length=16,label="Kullanıcı Adı")
-    tel = forms.CharField(label='Telefon Numarası',max_length=10,min_length=10,validators=[validate_phone],help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
+    first_name = forms.CharField(max_length=20, label='İsim')
+    last_name = forms.CharField(max_length=20, label='Soyisim')
+    username = forms.CharField(max_length=16, label="Kullanıcı Adı")
+    tel = forms.CharField(
+        label='Telefon Numarası',
+        max_length=10,
+        min_length=10,
+        validators=[validate_phone],
+        help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)"
+    )
     email = forms.EmailField()
 
     class Meta:
         model = AppUser
-        fields = ['first_name','last_name','username','tel','email']
-    
+        fields = ['first_name', 'last_name', 'username', 'tel', 'email']
+
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user',None)
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        appuser = AppUser.objects.get(user=user)
+        appuser = AppUser.objects.get(user=self.user)
         values = appuser.all_values()
         self.fields['first_name'].initial = values['first_name']
         self.fields['last_name'].initial = values['last_name']
         self.fields['username'].initial = values['username']
         self.fields['tel'].initial = values['tel']
         self.fields['email'].initial = values['email']
+
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
+
+    def clean_username(self):
+        username = self.data.get('username') 
+        qs = User.objects.filter(username=username).exclude(pk=self.user.pk)
+        if qs.exists():
+            raise ValidationError("Bu kullanıcı adı zaten kullanımda. Lütfen başka bir kullanıcı adı seçin.")
+        return username
 
 
 class RegisterForm(forms.ModelForm):
@@ -123,8 +136,16 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'username']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-control"
 
 class AppUserForm(forms.ModelForm):
     class Meta:
         model = AppUser
         fields = ['tel', 'role']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-control"
