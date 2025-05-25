@@ -1,0 +1,31 @@
+{% extends "need/base.html" %}
+{% block content %}
+<div class="container py-5">
+  <h2>Kind Formu</h2>
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Kaydet</button>
+    <a href="{% url 'need:kind_list' %}" class="btn btn-secondary">İptal</a>
+  </form>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const nameInput = document.querySelector("#id_name");
+    const slugInput = document.querySelector("#id_slug");
+
+    if (nameInput && slugInput) {
+        nameInput.addEventListener("input", function() {
+            let slug = nameInput.value
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')  // Özel karakterleri kaldır
+                .trim()
+                .replace(/\s+/g, '-')          // Boşlukları - ile değiştir
+                .substring(0, 40);             // Maksimum 40 karakter
+
+            slugInput.value = slug;
+        });
+    }
+});
+</script>
+{% endblock %}

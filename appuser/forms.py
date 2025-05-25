@@ -5,6 +5,22 @@ from django.core.exceptions import ValidationError,ObjectDoesNotExist
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import SetPasswordForm
 
+
+class AdminRoleForm(forms.ModelForm):
+    permissions = forms.MultipleChoiceField(
+        choices=Role.PERMISSION_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    class Meta:
+        model = Role
+        fields = '__all__'
+
+    def clean_permissions(self):
+        return self.cleaned_data.get('permissions', [])
+
+
 class CustomSetPasswordForm(SetPasswordForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,12 +66,18 @@ class RegisterForm(forms.ModelForm):
     password = forms.CharField(max_length=16,widget=forms.PasswordInput)
 
     def save(self):
+        try:
+            role = Role.objects.get(slug="user")
+        except Role.DoesNotExist:
+            role = Role(name="User", slug="user")
+            role.save(),
         user = User(username=self.cleaned_data['tel'],first_name = self.cleaned_data['first_name'],last_name = self.cleaned_data['last_name'],email = self.cleaned_data['email'])
         user.set_password(self.cleaned_data['password'])
         user.save()
         appuser = AppUser(
             user=user,
-            tel=self.cleaned_data['tel']
+            tel=self.cleaned_data['tel'],
+            role=role
         )
         appuser.save()
 
@@ -94,3 +116,15 @@ class LoginForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
+
+
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'username']
+
+class AppUserForm(forms.ModelForm):
+    class Meta:
+        model = AppUser
+        fields = ['tel', 'role']

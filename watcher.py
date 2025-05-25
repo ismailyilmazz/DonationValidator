@@ -10,7 +10,7 @@ import sys
 class RestartHandler(PatternMatchingEventHandler):
     def __init__(self, command, debounce_delay=1.0):
         super().__init__(
-            patterns=["*.py"],
+            patterns=["*.py", "*.html", "*.css", "*.js"],  # hangi dosyaları izleyeceğiz
             ignore_directories=True,
             ignore_patterns=["*/__pycache__/*", "*.pyc", "*.pyo"]
         )

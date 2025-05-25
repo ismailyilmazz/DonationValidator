@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_bootstrap_icons',
     'channels',
-    'bootstrap5',
     'need',
     'appuser'
 ]
@@ -71,6 +70,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'need.context_processors.user_permissions',
+                'appuser.context_processors.user_permissions',
             ],
         },
     },

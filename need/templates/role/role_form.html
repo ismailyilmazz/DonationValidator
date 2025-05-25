@@ -1,0 +1,31 @@
+{% extends "need/base.html" %}
+{% block content %}
+<div class="container py-5">
+  <h2>Rol Formu</h2>
+
+  <form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="{{ form.name.id_for_label }}" class="form-label">Rol Adı</label>
+      {{ form.name }}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.slug.id_for_label }}" class="form-label">Slug</label>
+      {{ form.slug }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label">İzinler</label>
+      <div class="form-check">
+        {% for checkbox in form.permissions %}
+          <div class="form-check">
+            {{ checkbox.tag }} <label class="form-check-label">{{ checkbox.choice_label }}</label>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Kaydet</button>
+    <a href="{% url 'need:role_list' %}" class="btn btn-secondary">İptal</a>
+  </form>
+</div>
+{% endblock %}

@@ -2,7 +2,8 @@ from django import forms
 import re
 from .models import Need, Kind, Offer
 from django.core.exceptions import ValidationError
-from appuser.models import AppUser
+from appuser.models import AppUser,Role
+from django.utils.text import slugify
 
 
 def validate_phone(value):
@@ -11,6 +12,22 @@ def validate_phone(value):
             "Telefon numarası 0 ile başlayamaz ve en fazla 10 haneli olmalıdır."
         )
 
+
+class KindForm(forms.ModelForm):
+    class Meta:
+        model = Kind
+        fields = ['name', 'slug']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'slug': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get("name")
+        if name:
+            cleaned_data["slug"] = slugify(name)[:40]  # Maksimum 40 karakter
+        return cleaned_data
 
 class AddNeedForm(forms.ModelForm):
     first_name = forms.CharField(max_length=40, label="İsim")
@@ -62,6 +79,25 @@ class AddNeedForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
+
+
+
+class RoleForm(forms.ModelForm):
+    permissions = forms.MultipleChoiceField(
+        choices=Role.PERMISSION_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    class Meta:
+        model = Role
+        fields = ['name', 'slug', 'permissions']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.permissions:
+            self.initial['permissions'] = self.instance.permissions
+
 
 
 class OfferForm(forms.ModelForm):

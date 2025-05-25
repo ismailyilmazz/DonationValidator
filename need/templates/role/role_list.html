@@ -1,0 +1,66 @@
+{% extends "need/base.html" %}
+{% block content %}
+<div class="container">
+  <h2>Roller</h2>
+  <a href="{% url 'need:role_create' %}" class="btn btn-primary mb-3">Yeni Rol Ekle</a>
+
+
+  <!-- Roller -->
+  <div class="d-flex flex-column gap-2">
+    <div class="row">
+      <div class="col-2 col-md-2" style="padding-top:50px;">
+    {% for role in roles %}
+
+      <!-- Sol: İsim -->
+      <div style="min-width:150px; height:50px; flex-shrink:0;">
+        <strong>{{ role.name }}</strong><br>
+        <small class="text-muted">{{ role.slug }}</small>
+      </div>
+
+    {% endfor %}
+      </div>
+      <div class="col-8 col-md-9" style="overflow:auto">
+      <!-- Orta: Scrollable İzinler -->
+      <table class="table table-bordered table-sm">
+  <thead>
+    <tr style="height:50px">
+      {% for key, label in permissions %}
+      <th class="text-center">{{ label }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for role in roles %}
+
+    <tr style="height:50px">
+      {% for key, label in permissions %}
+      <td class="text-center">
+        {% if key in role.permissions %}
+        <i class="bi bi-check-lg text-success"></i>
+        {% else %}
+        <i class="bi bi-x-lg text-danger"></i>
+        {% endif %}
+      </td>
+      {% endfor %}
+    </tr>
+
+
+
+    {% endfor %}
+  </tbody>
+</table>
+      </div>
+      <div class="col-2 col-md-1" style="padding-top:50px;">
+    {% for role in roles %}
+
+      <!-- Sağ: Buton -->
+      <div style="min-width:100px; height:50px; flex-shrink:0;" class="text-end">
+        <a href="{% url 'need:role_update' role.slug %}" class="btn btn-sm btn-warning">Düzenle</a>
+      </div>
+
+    {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

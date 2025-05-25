@@ -72,52 +72,56 @@
   <div class="col-md-9">
     <ul class="list-group">
       {% for need in needs %}
-      <li class="list-group-item need-item" style="display:flex; flex-direction:row;padding:1em">
-        <div class="need-date">
+      <li class="list-group-item need-item row" style="display:flex; flex-direction:row;padding:1em">
+        <div class="need-date col-1">
           <p>{{ need.created.day }}</p>
           <p><b>{{ need.month_name }}</b></p>
         </div>
 
-        <div class="need-name">
+        <div class="need-name col-8">
           <p>{{ need.name }}</p>
-          <p style="margin-left:1em">{{ need.kind }}</p>
-          {% if need.status == 'donor_find' %}
-          <div class="status-badge status-donor-find">Bağışçı Bulundu</div>
+          <p style="margin-left:1em"><b>{{ need.kind }}</b></p>
+          {% comment %} {% if need.status == 'donor_find' %}
+            <div class="status-badge status-donor-find">Bağışçı Bulundu</div>
           {% endif %}
           {% if need.status == 'publish' %}
-          <div class="status-badge status-publish">Aktif</div>
-          {% endif %}
+            <div class="status-badge status-publish">Aktif</div>
+          {% endif %} {% endcomment %}
         </div>
 
-        <div class="need-actions">
+        <div class="need-actions col-3">
+          <div class="col" style="display:flex;align-items:center;justify-content:space-around; ">
           <a href="{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/"
             class="btn btn-outline-primary btn-sm">Detay</a>
+          {% if "need_delete" in appuser.permissions or need.needy.username == appuser.username %}
+            <a href="delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Sil</a>
+          {% endif %}
+          </div>
 
           <!-- Debug info - remove this after testing -->
-          <small style="display: block; color: #666;">
+          {% comment %} <small style="display: block; color: #666;">
             Auth: {{ user.is_authenticated|yesno:"Yes,No" }} |
             User: {{ user.id }} |
             Needy: {{ need.needy.id }} |
             Status: {{ need.status }} |
             Pending: {{ need.has_pending_offer|yesno:"Yes,No" }}
-          </small>
+          </small> {% endcomment %}
 
           {% if user.is_authenticated %}
-          {% if need.needy.id != user.id %}
-          {% if need.status == 'publish' %}
-          {% if not need.has_pending_offer %}
-          <a href="{% url 'need:offer' need.id %}" class="btn btn-success btn-sm">Bağış Yap</a>
-          {% else %}
-          <span class="btn btn-warning btn-sm disabled">Teklif Var</span>
-          {% endif %}
-          {% else %}
-          <span class="text-muted small">Status: {{ need.status }}</span>
-          {% endif %}
-          {% else %}
-          <span class="text-muted small">Own need</span>
-          {% endif %}
-          {% else %}
-          <span class="text-muted small">Login required</span>
+            {% if need.needy.id != user.id %}
+              {% if need.status == 'publish' %}
+                {% if not need.has_pending_offer %}
+                <a href="{% url 'need:offer' need.id %}" class="btn btn-success btn-sm">Bağış Yap</a>
+                {% else %}
+                <span class="btn btn-warning btn-sm disabled">Teklif Var</span>
+                {% endif %}
+                {% else %}
+                <span class="text-muted small">Status: {{ need.status }}</span>
+              {% endif %}
+              {% else %}
+              <span class="text-muted small">Kendi ihtiyacına bağış yapamazsın</span>
+            {% endif %}
+            {% else %}
           {% endif %}
 
           {% if need.status == 'donor_find' %}

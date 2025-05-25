@@ -1,0 +1,62 @@
+{% extends "need/base.html" %}
+{% block content %}
+<div class="container py-5">
+  <h2>Kind Listesi</h2>
+
+  <form method="POST" class="mb-4">
+    {% csrf_token %}
+    <div class="row g-2 align-items-end">
+      <div class="col">
+        {{ form.name.label_tag }} {{ form.name }}
+      </div>
+      <div class="col">
+        {{ form.slug.label_tag }} {{ form.slug }}
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-success">Yeni Kind Ekle</button>
+      </div>
+    </div>
+  </form>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>İsim</th>
+        <th>Slug</th>
+        <th>İşlemler</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for kind in kinds %}
+      <tr>
+        <td>{{ kind.name }}</td>
+        <td>{{ kind.slug }}</td>
+        <td>
+          <a href="{% url 'need:kind_update' kind.slug %}" class="btn btn-sm btn-warning">Düzenle</a>
+          {% comment %} <a href="{% url 'need:kind_delete' kind.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğine emin misin?');">Sil</a> {% endcomment %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const nameInput = document.querySelector("#id_name");
+    const slugInput = document.querySelector("#id_slug");
+
+    if (nameInput && slugInput) {
+        nameInput.addEventListener("input", function() {
+            let slug = nameInput.value
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')  // Özel karakterleri kaldır
+                .trim()
+                .replace(/\s+/g, '-')          // Boşlukları - ile değiştir
+                .substring(0, 40);             // Maksimum 40 karakter
+
+            slugInput.value = slug;
+        });
+    }
+});
+</script>
+{% endblock %}

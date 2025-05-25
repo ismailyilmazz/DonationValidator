@@ -1,5 +1,5 @@
-from django.shortcuts import render,redirect
-from .forms import RegisterForm, LoginForm, ProfileForm
+from django.shortcuts import render,redirect, get_object_or_404
+from .forms import RegisterForm, LoginForm, ProfileForm,UserForm,AppUserForm
 from django.contrib.auth import login,logout
 from .models import AppUser
 from need.models import Need, Offer
@@ -8,6 +8,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetConfirmView
 from .forms import CustomSetPasswordForm
+from .utils import permission_required_any
+from django.core.paginator import Paginator
+
     
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     form_class = CustomSetPasswordForm
@@ -113,3 +116,55 @@ def account_summary_view(request):
 
 def stk_page_view(request):
     return render(request, 'user/stk_page.html')
+
+
+############ USER MANAGEMENT ##################
+
+
+
+@permission_required_any('user_information', 'user_delete')
+def user_list(request):
+    query = request.GET.get('q', '')
+    users = AppUser.objects.select_related('user', 'role').all()
+    if query:
+        users = users.filter(
+            user__username__icontains=query
+        ) | users.filter(
+            tel__icontains=query
+        )
+    paginator = Paginator(users, 10)  # 10 user per page
+    page = request.GET.get('page')
+    users = paginator.get_page(page)
+    return render(request, 'user/user_list.html', {'users': users, 'query': query})
+
+@permission_required_any('user_information', 'user_delete')
+def user_detail(request, username):
+    user = get_object_or_404(AppUser, user__username=username)
+    return render(request, 'user/user_detail.html', {'user_obj': user})
+
+@permission_required_any('user_update', 'user_information')
+def user_update(request, username):
+    app_user = get_object_or_404(AppUser, user__username=username)
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=app_user.user)
+        appuser_form = AppUserForm(request.POST, instance=app_user)
+        if user_form.is_valid() and appuser_form.is_valid():
+            user_form.save()
+            appuser_form.save()
+            return redirect('user:user_list')
+    else:
+        user_form = UserForm(instance=app_user.user)
+        appuser_form = AppUserForm(instance=app_user)
+    return render(request, 'user/user_form.html', {'user_form': user_form, 'appuser_form': appuser_form})
+
+@permission_required_any('user_delete')
+def user_delete(request, username):
+    app_user = get_object_or_404(AppUser, user__username=username)
+    if request.method == 'POST':
+        app_user.delete()
+        return redirect('user:user_list')
+    return render(request, 'user/user_confirm_delete.html', {'user_obj': app_user})
+
+################
+
+

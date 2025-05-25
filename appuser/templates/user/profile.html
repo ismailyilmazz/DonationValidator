@@ -40,21 +40,12 @@
     </div>
     <div class="col-md-8">
         <!-- ismail -->
-<<<<<<< HEAD
-        {% if user.role != "User" %}
-        <div class="admin-tools mb-4 w-100" style="display:flex; justify-content:flex-end; column-gap:1em;">
-            <a class="btn btn-outline-success btn-sm" href="{% url 'need:import' %}">CSV ile İçe Aktar</a>
-            <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_needs' %}">İhtiyaçları Dışa Aktar</a>
-            <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_offers' %}">Teklifleri Dışa Aktar</a>
-        </div>
-=======
         {% if user.role == "STK" or user.role == "ADMIN" %} <!-- ismail minor change-->
             <div class="admin-tools mb-4 w-100" style="display:flex; justify-content:flex-end; column-gap:1em;">
                 <a class="btn btn-outline-success btn-sm" href="{% url 'need:import' %}">CSV ile İçe Aktar</a>
                 <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_needs' %}">İhtiyaçları Dışa Aktar</a>
                 <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_offers' %}">Teklifleri Dışa Aktar</a>
             </div>  
->>>>>>> 50d9253619b4f052a7c0fb8e7a6012d2014469fd
         {% endif %}
         <!-- ismail -->
         {% for need in needs %}

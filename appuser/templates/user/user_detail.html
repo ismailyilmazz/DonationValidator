@@ -1,0 +1,16 @@
+{% extends "need/base.html" %}
+{% block content %}
+<div class="container py-5">
+  <h2>Kullanıcı Detay: {{ user_obj.user.username }}</h2>
+  <ul class="list-group">
+    <li class="list-group-item"><strong>Ad:</strong> {{ user_obj.user.first_name }}</li>
+    <li class="list-group-item"><strong>Soyad:</strong> {{ user_obj.user.last_name }}</li>
+    <li class="list-group-item"><strong>Email:</strong> {{ user_obj.user.email }}</li>
+    <li class="list-group-item"><strong>Telefon:</strong> {{ user_obj.tel }}</li>
+    <li class="list-group-item"><strong>Rol:</strong> {{ user_obj.role.name }}</li>
+    <li class="list-group-item"><strong>Adresler:</strong> {{ user_obj.address }}</li>
+    <li class="list-group-item"><strong>Aktif Adres:</strong> {{ user_obj.current_address }}</li>
+  </ul>
+  <a href="{% url 'user:user_list' %}" class="btn btn-secondary mt-3">Geri Dön</a>
+</div>
+{% endblock %}

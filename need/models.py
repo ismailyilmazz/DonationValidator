@@ -20,12 +20,10 @@ class Kind(models.Model):
 
 class Need(models.Model):
     STATUS_CHOICES = (
-        ('first_review','First_Review'),
         ('publish','Publish'),
         ('donor_find','Donor_Find'),
-        ('second_review','Second_Review'),
         ('transportation','Transportation'),
-        ('complated','Complated'),
+        ('completed','Completed'),
         ('cancelled','Cancelled'),
         ('rejected','Rejected')
     )
@@ -35,7 +33,7 @@ class Need(models.Model):
     needy = models.ForeignKey(User,on_delete=models.CASCADE,related_name='received_donations')
     donor=models.ForeignKey(User,null=True,blank=True,on_delete=models.CASCADE,related_name='made_donations')
     kind=models.ForeignKey(Kind,on_delete=models.CASCADE)
-    status=models.CharField(max_length=20,choices=STATUS_CHOICES,default='first_review')
+    status=models.CharField(max_length=20,choices=STATUS_CHOICES,default='publish')
     address=models.CharField(max_length=100,blank=True,null=True)
     latitude = models.FloatField()
     longitude = models.FloatField()

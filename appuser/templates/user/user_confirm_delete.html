@@ -1,0 +1,12 @@
+{% extends "need/base.html" %}
+{% block content %}
+<div class="container py-5">
+  <h2>Kullanıcı Sil: {{ user_obj.user.username }}</h2>
+  <p><strong>Dikkat:</strong> Bu işlem geri alınamaz. Kullanıcıyı ve tüm bilgilerini silmek istediğinize emin misiniz?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+    <a href="{% url 'user:user_list' %}" class="btn btn-secondary">Vazgeç</a>
+  </form>
+</div>
+{% endblock %}

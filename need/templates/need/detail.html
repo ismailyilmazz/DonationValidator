@@ -1,17 +1,140 @@
 {% extends "need/base.html" %}
-{% block title %}Detail{% endblock title %}
+{% load status_extras %}
+{% load static %}
+{% block title %}{{ need.name }}{% endblock title %}
 {% block content %}
-<div style="width:100%; padding-top:8em; display:flex; justify-content:center; align-items:center;">
-{% if need != None %}
-<div class="card p-4">
-    <h2>{{need.name}}</h2>
-    {{need.kind}}<br>
-    {{need.needy}}<br>
-    {{need.status}}<br>
-    {{need.address}}<br>
+<style>
+.steps-container {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 40px 0;
+  padding: 0 10px;
+}
+
+.steps-container::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ccc;
+  z-index: 0;
+}
+
+.steps-container::after {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 0;
+  height: 2px;
+  background-color: #28a745;
+  z-index: 1;
+  width: 0;
+}
+
+.step {
+  position: relative;
+  text-align: center;
+  flex: 1;
+  z-index: 2;
+}
+
+.step .circle {
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  background-color: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  margin: 0 auto;
+}
+
+.step.active .circle {
+  background-color: #28a745;
+}
+
+.step p {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #28a745;
+}
+
+.step.inactive p {
+  color: #aaa;
+}
+</style>
+
+
+
+<div class="container py-5">
+  {% if need %}
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="card-title mb-3">{{ need.name }}</h2>
+          <p class="text-muted mb-2"><i class="bi bi-person-fill"></i> <strong>İhtiyaç Sahibi:</strong> {{ need.needy }}</p>
+          <p class="text-muted mb-2"><i class="bi bi-tags-fill"></i> <strong>Kategori:</strong> {{ need.kind }}</p>
+          <p class="text-muted mb-2"><i class="bi bi-geo-alt-fill"></i> <strong>Adres:</strong> {{ need.address }}</p>
+          {% comment %} <p class="text-muted mb-2"><i class="bi bi-info-circle-fill"></i> <strong>Durum:</strong>  {% endcomment %}
+           
+
+{% status_passed_percent need.status as progress_width %}
+{% step_statuses as step_statuses %}
+
+<div class="steps-container" style="--progress-width: {{ progress_width }}%;">
+  {% for s, label in need.STATUS_CHOICES %}
+  {% if s in step_statuses %}
+    {% status_passed need.status s as is_active %}
+    {% toTurkish label as val %}
+    <div class="step {% if is_active %}active{% else %}inactive{% endif %}">
+      <div class="circle"></div>
+      <p>{{val}}</p>
+    </div>
+  {% endif %}
+{% endfor %}
+
 </div>
-{% else %}
-İhtiyaç Bulunamadı!!!
-{% endif %}
-<div>
+
+
+          {% comment %} </p> {% endcomment %}
+          <hr>
+          <h5 class="mb-3">Teklif Durumu:</h5>
+          {% if offer %}
+            <div class="alert alert-success">
+              <strong>Bir teklif mevcut.</strong><br>
+              <strong>Donör:</strong> {{ offer.donor_first_name }} {{ offer.donor_last_name }} <br>
+              <strong>Durum:</strong> {{ offer.get_status_display }}
+            </div>
+          {% else %}
+            <div class="alert alert-warning">
+              Henüz bir teklif yapılmamış.
+            </div>
+          {% endif %}
+          <a href="/" class="btn btn-outline-secondary mt-3"><i class="bi bi-arrow-left"></i> Geri Dön</a>
+          {% if "need_delete" in appuser.permissions or need.needy.username == appuser.username %}
+          <a href="delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-outline-danger mt-3"><i class="bi bi-trash"></i> Sil</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+{% load bootstrap_icons %}
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="alert alert-danger text-center">
+        <strong>İhtiyaç Bulunamadı!</strong>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
 {% endblock content %}

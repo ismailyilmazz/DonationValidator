@@ -19,4 +19,10 @@ urlpatterns=[
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='user/password_reset_done.html'), name='password_reset_done'),
     path('reset/<uidb64>/<token>/',CustomPasswordResetConfirmView.as_view(template_name='user/password_reset_confirm.html'), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='user/password_reset_complete.html'), name='password_reset_complete'),
+    ###### USER
+    path('users/', views.user_list, name='user_list'),
+    path('users/<slug:username>/', views.user_detail, name='user_detail'),
+    path('users/<slug:username>/update/', views.user_update, name='user_update'),
+    path('users/<slug:username>/delete/', views.user_delete, name='user_delete'),
+    #####
 ]

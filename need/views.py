@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect, get_object_or_404
 from .models import Need,Kind, Offer
-from .forms import AddNeedForm, OfferForm
+from .forms import AddNeedForm, OfferForm, RoleForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
@@ -9,10 +9,11 @@ from appuser.models import AppUser,Role
 from django.template.defaultfilters import slugify
 from django.http import StreamingHttpResponse
 import csv
-from .forms import NeedImportForm
+from .forms import NeedImportForm,KindForm
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.utils.dateparse import parse_datetime, parse_date
 from django.contrib import messages
+from .utils import permission_required
 
 # Create your views here.
 
@@ -24,8 +25,12 @@ def get_month_name(needs):
 def detail_view(request,year,month,day,slug):
     try:
         need = Need.objects.get(created__year=year,created__month=month,created__day=day,slug=slug)
+        try:
+            offer = Offer.objects.get(need=need)
+        except Offer.DoesNotExist:
+            offer = None
         if need.needy == request.user or need.donor == request.user or need.status == 'publish':
-            return render(request,'need/detail.html',{'need':need})
+            return render(request,'need/detail.html',{'need':need,'offer':offer,'appuser':AppUser.objects.get(user=request.user).all_values()})
         return render(request,'need/detail.html',{'need':None})
     except ObjectDoesNotExist:
         return render(request,'need/detail.html',{'need':None})
@@ -44,7 +49,23 @@ def list_view(request):
     end = min(current + 3, total) + 1
     page_range = range(start, end)
 
-    return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
+    if request.user.is_authenticated: 
+        return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'appuser':AppUser.objects.get(user=request.user).all_values(),'len':len(needs)})
+    else:
+        return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'appuser':None,'len':len(needs)})
+
+
+def delete_need(request,year,month,day,slug):
+    try:
+        if request.user.is_authenticated:
+            need = Need.objects.get(created__year=year,created__month=month,created__day=day,slug=slug)
+            userPermissions = AppUser.objects.get(user=request.user).all_values()["permissions"]
+            if need.needy == request.user or "need_delete" in userPermissions:
+                need.delete()
+        return redirect("/")        
+    except ObjectDoesNotExist:
+            return redirect("/")
+
 
 def kind_view(request,slug):
     kind = Kind.objects.get(slug=slug)
@@ -126,6 +147,94 @@ def search_view(request):
     page_range = range(start, end)
 
     return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
+
+
+############## KIND  ##########################33#
+
+def kind_list(request):
+    if not request.user.is_authenticated:
+        return render(request,'need/unauthorized.html')
+    appuser = AppUser.objects.get(user=request.user).all_values()
+    if "category" not in appuser["permissions"]:
+        return render(request,'need/unauthorized.html')
+    
+    kinds = Kind.objects.all()
+    form = KindForm()
+
+    if request.method == 'POST':
+        form = KindForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('need:kind_list') 
+
+    return render(request, 'need/kind_list.html', {'kinds': kinds, 'form': form})
+
+
+def kind_update(request, slug):
+    if not request.user.is_authenticated:
+        return render(request,'need/unauthorized.html')
+    appuser = AppUser.objects.get(user=request.user).all_values()
+    if "category" not in appuser["permissions"]:
+        return render(request,'need/unauthorized.html')
+    
+    kind = get_object_or_404(Kind, slug=slug)
+    if request.method == 'POST':
+        form = KindForm(request.POST, instance=kind)
+        if form.is_valid():
+            form.save()
+            return redirect('need:kind_list')
+    else:
+        form = KindForm(instance=kind)
+    return render(request, 'need/kind_form.html', {'form': form})
+
+
+
+
+########################################
+
+
+############## ROLE #####################
+
+
+
+
+@permission_required('role_add')
+def role_create(request):
+    if request.method == 'POST':
+        form = RoleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('role_list')
+    else:
+        form = RoleForm()
+    return render(request, 'role/role_form.html', {'form': form})
+
+@permission_required('role_update')
+def role_update(request, slug):
+    role = get_object_or_404(Role, slug=slug)
+    if request.method == 'POST':
+        form = RoleForm(request.POST, instance=role)
+        if form.is_valid():
+            form.save()
+            return redirect('role_list')
+    else:
+        form = RoleForm(instance=role)
+    return render(request, 'role/role_form.html', {'form': form})
+
+@permission_required('role_add')
+def role_list(request):
+    roles = Role.objects.all()
+    permissions = Role.PERMISSION_CHOICES
+    return render(request, 'role/role_list.html', {'roles': roles, 'permissions': permissions})
+
+
+
+#######################################
+
+def unauthorized_view(request):
+    return render(request,'need/unauthorized.html')
+
+
 
 @login_required
 def offer_view(request, need_id):
