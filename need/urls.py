@@ -24,9 +24,9 @@ urlpatterns=[
 
     path('unauthorized/',unauthorized_view,name="unauthorized"),
 
-#ismail
-    path("import/", views.import_needs, name="import"),
+#İmport-export, -uygun yönlendirmeleri yap aga-
+    path("import/", views.import_needs, name="import_needs"),
     path("export/needs/", views.export_needs, name="export_needs"),
     path("export/offers/", views.export_offers, name="export_offers"),
-#ismail
+#import-export
 ]
