@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import list_view,add_view,detail_view,kind_view,search_view,offer_view,mark_received_view,delete_need,unauthorized_view
+from .views import list_view,add_view,detail_view,kind_view,search_view,offer_view,mark_received_view,delete_need,unauthorized_view,courier_request_list
 from . import views
 
 app_name = 'need'
@@ -21,7 +21,10 @@ urlpatterns=[
     path('roles/create/', views.role_create, name='role_create'),
     path('roles/<slug:slug>/update/', views.role_update, name='role_update'),
     ####
-
+    #### COURIER
+    path('courier/requests/', courier_request_list, name='request_list'),
+    path('courier/assigned/', views.my_courier_needs, name='my_courier_needs'),
+    ####
     path('unauthorized/',unauthorized_view,name="unauthorized"),
 
 #İmport-export, -uygun yönlendirmeleri yap aga-

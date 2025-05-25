@@ -160,6 +160,36 @@ class OfferForm(forms.ModelForm):
                 self.fields["donor_last_name"].initial = user.last_name
 
 
+class BulkCourierForm(forms.Form):
+    needs = forms.MultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple,
+        choices=[],  # View'da dinamik olarak eklenecek
+        required=True,
+        label="Taşıyıcı Olarak Atanacak İhtiyaçlar"
+    )
+
+    def __init__(self, *args, **kwargs):
+        needs_queryset = kwargs.pop('needs_queryset', None)
+        super().__init__(*args, **kwargs)
+        if needs_queryset:
+            self.fields['needs'].choices = [(str(need.id), f"{need.name} - {need.address}") for need in needs_queryset]
+
+
+class CourierWithdrawForm(forms.Form):
+    needs = forms.ModelMultipleChoiceField(
+        queryset=Need.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        required=True,
+        label="Taşıyıcısı Olduğunuz İhtiyaçlar"
+    )
+
+    def __init__(self, *args, **kwargs):
+        needs_queryset = kwargs.pop('needs_queryset', None)
+        super().__init__(*args, **kwargs)
+        if needs_queryset is not None:
+            self.fields['needs'].queryset = needs_queryset
+
+
 #ismail
 class NeedImportForm(forms.Form):
     csv_file= forms.FileField(label="İhtiyaçlar(CSV)")

@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect, get_object_or_404
 from .models import Need,Kind, Offer
-from .forms import AddNeedForm, OfferForm, RoleForm,DeliveryForm
+from .forms import AddNeedForm, OfferForm, RoleForm,DeliveryForm,BulkCourierForm,CourierWithdrawForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
@@ -133,9 +133,10 @@ def add_view(request):
         name = request.POST.get('name')
         kind = request.POST.get('kind')
         kind = Kind.objects.get(id=kind)
+        address = request.POST.get('address')
         if request.user.is_authenticated:
             needy = User.objects.get(username = request.user.username)
-            need = Need(latitude=latitude,longitude=longitude,name=name,kind=kind,needy=needy)
+            need = Need(latitude=latitude,longitude=longitude,name=name,kind=kind,needy=needy,address=address)
             need.save()
         else:
             tel = request.POST.get('tel')
@@ -152,7 +153,7 @@ def add_view(request):
                 login(request=request,user=user)
                 latitude = latitude if latitude else 0
                 longitude = longitude if longitude else 0
-                need = Need(latitude=latitude,longitude=longitude,name=name,kind=kind,needy=user)
+                need = Need(latitude=latitude,longitude=longitude,name=name,kind=kind,needy=user,address=address)
                 need.save()
             except ValidationError as e:
                 form.add_error('tel',e.message)
@@ -182,6 +183,88 @@ def search_view(request):
     page_range = range(start, end)
 
     return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
+
+################ COURIER ######################
+
+
+@login_required
+def courier_request_list(request):
+    appuser = AppUser.objects.get(user=request.user).all_values()
+    if 'offer_update' not in appuser['permissions']:
+        messages.error(request, "Bu sayfaya erişim yetkiniz yok.")
+        return redirect('/unauthorized')
+
+    needs = Need.objects.filter(status='courier_request').order_by('-id')
+    query = request.GET.get('q')
+    if query:
+        needs = needs.filter(address__icontains=query)
+
+    paginator = Paginator(needs, 30)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    form = BulkCourierForm(needs_queryset=page_obj.object_list)
+
+    if request.method == 'POST':
+        form = BulkCourierForm(request.POST, needs_queryset=needs)
+        if form.is_valid():
+            ids = form.cleaned_data['needs']
+            needs = Need.objects.filter(id__in=ids)
+            for need in needs:
+                need.status = "transportation"
+                offer = Offer.objects.get(need=need)
+                offer.courier = request.user
+                need.save()
+                offer.save()
+
+            messages.success(request, f"Başarıyla atandı.")
+            return redirect(request.path)
+    if query == None:
+        query=''
+
+    return render(request, 'courier/courier_list.html', {
+        'page_obj': page_obj,
+        'form': form,
+        'query': query
+    })
+
+
+@login_required
+def my_courier_needs(request):
+    appuser = AppUser.objects.get(user=request.user).all_values()
+    if 'offer_update' not in appuser['permissions']:
+        messages.error(request, "Bu sayfaya erişim yetkiniz yok.")
+        return redirect('/unauthorized')
+
+    needs = Need.objects.filter(offers__courier=request.user).order_by('-id')
+    query = request.GET.get('q')
+    if query:
+        needs = needs.filter(address__icontains=query)
+
+    paginator = Paginator(needs, 30)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    form = CourierWithdrawForm(needs_queryset=page_obj.object_list)
+
+    if request.method == 'POST':
+        form = CourierWithdrawForm(request.POST, needs_queryset=needs)
+        if form.is_valid():
+            ids = form.cleaned_data['needs']
+            for need in Need.objects.filter(id__in=ids):
+                offer = Offer.objects.get(need=need)
+                offer.courier = None
+                need.status = 'courier_request'
+                offer.save()
+                need.save()
+            messages.success(request, "Seçilen ihtiyaçlardan taşıyıcılıktan çekildiniz.")
+            return redirect(request.path)
+    if query == None:
+        query=''
+    return render(request, 'courier/my_courier_needs.html', {'form': form, 'page_obj': page_obj, 'query': query})
+
+
+#################################################
 
 
 ############## KIND  ##########################33#
