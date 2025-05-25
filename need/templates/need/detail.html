@@ -118,7 +118,7 @@
           {% endif %}
           <a href="/" class="btn btn-outline-secondary mt-3"><i class="bi bi-arrow-left"></i> Geri Dön</a>
           {% if "need_delete" in appuser.permissions or need.needy.username == appuser.username %}
-          <a href="delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-outline-danger mt-3"><i class="bi bi-trash"></i> Sil</a>
+          <a href="/delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-outline-danger mt-3"><i class="bi bi-trash"></i> Sil</a>
           {% endif %}
         </div>
       </div>
