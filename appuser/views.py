@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect, get_object_or_404
-from .forms import RegisterForm, LoginForm, ProfileForm,UserForm,AppUserForm
+from .forms import RegisterForm, LoginForm, ProfileForm,UserForm,AppUserForm,AddressForm
 from django.contrib.auth import login,logout
 from .models import AppUser
 from need.models import Need, Offer
@@ -59,34 +59,52 @@ def profile_view(request):
     appuser = AppUser.objects.get(user=request.user)
     user_needs = Need.objects.filter(needy=request.user).order_by('-created')
     user_offers = Offer.objects.filter(donor=request.user).order_by('-created')
-
-    if request.method == 'POST':
-        form = ProfileForm(request.POST, user=request.user)
-        if form.is_valid():
-            # Kullanıcı bilgilerini güncelle
-            user = request.user
-            user.first_name = form.cleaned_data['first_name']
-            user.last_name = form.cleaned_data['last_name']
-            user.username = form.cleaned_data['username']
-            user.email = form.cleaned_data['email']
-            user.save()
-
-            # AppUser bilgilerini güncelle
-            appuser.tel = form.cleaned_data['tel']
-            appuser.save()
-
-            login(request, user=user)  # Kullanıcıyı yeniden oturum açtır
-            messages.success(request, "Profil başarıyla güncellendi.")
-            return redirect('/user/profile/')
-        else:
-            messages.error(request, "Lütfen formdaki hataları düzeltin.")
-
-    else:
-        form = ProfileForm(user=request.user)
-
     user_dict = appuser.all_values()
     needs = Need.objects.filter(needy=request.user)
-    get_month_name(needs)  # Burası tanımlıysa devam
+    get_month_name(needs)
+
+    form = ProfileForm(user=request.user)
+    
+    if request.method == 'POST':
+        if 'profile_update' in request.POST:
+            form = ProfileForm(request.POST, user=request.user)
+            if form.is_valid():
+                user = request.user
+                user.first_name = form.cleaned_data['first_name']
+                user.last_name = form.cleaned_data['last_name']
+                user.username = form.cleaned_data['username']
+                user.email = form.cleaned_data['email']
+                user.save()
+
+                appuser.tel = form.cleaned_data['tel']
+                appuser.save()
+
+                login(request, user=user)
+                messages.success(request, "Profil başarıyla güncellendi.")
+                return redirect('/user/profile/')
+            else:
+                messages.error(request, "Lütfen formdaki hataları düzeltin.")
+
+        elif 'address_update' in request.POST:
+            new_address = request.POST.get('new_address')
+            current_index = request.POST.get('current_address')
+
+            if new_address:
+                addresses = appuser.address or []
+                addresses.append(new_address)
+                appuser.address = addresses
+                appuser.save()
+                messages.success(request, "Adres eklendi.")
+
+            if current_index is not None:
+                try:
+                    appuser.current_address = int(current_index)
+                    appuser.save()
+                    messages.success(request, "Mevcut adres güncellendi.")
+                except ValueError:
+                    messages.error(request, "Geçersiz adres seçimi.")
+
+            return redirect('/user/profile/')
 
     return render(
         request,
@@ -99,6 +117,28 @@ def profile_view(request):
             'user_offers': user_offers,
         }
     )
+
+
+
+@login_required
+def delete_address(request, index):
+    appuser = get_object_or_404(AppUser, user=request.user)
+
+    if index == appuser.current_address:
+        messages.error(request, "Seçili adresi silemezsiniz.")
+    elif 0 <= index < len(appuser.address):
+        appuser.address.pop(index)
+        if index < appuser.current_address:
+            appuser.current_address -= 1
+        elif index > appuser.current_address:
+            pass
+        appuser.save()
+        messages.success(request, "Adres başarıyla silindi.")
+    else:
+        messages.error(request, "Geçersiz adres seçimi.")
+
+    return redirect('user:profile')
+
 
 
 @login_required

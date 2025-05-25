@@ -201,7 +201,7 @@
 
 <body id="body-pd">
     <header class="header" id="header" style="display:flex; flex-direction:row; row-gap:8">
-        <div class="header_toggle"><i class="bi bi-list" > </i>
+        <div class="header_toggle"><i class="bi bi-list" id="header-toggle"> </i>
         </div>
         <div><a href="/add/" class="btn btn-outline-success">İhtiyacım Var</a></div>
     </header>
@@ -225,8 +225,13 @@
                         <a href="/roles/" class="nav_link"> <i class="bi nav_icon bi-person-vcard-fill text-danger" ></i> <span class="nav_name text-danger">Roller</span> </a>
                     {% endif %}
                     {% if 'user_delete' in user_permissions or 'user_information' in user_permissions %}
-                        <a href="/users/" class="nav_link"> <i class="bi nav_icon bi-people-fill text-danger" ></i> <span class="nav_name text-danger">Kullanıcılar</span> </a>
+                        <a href="/user/users/" class="nav_link"> <i class="bi nav_icon bi-people-fill text-danger" ></i> <span class="nav_name text-danger">Kullanıcılar</span> </a>
                     {% endif %}
+                    {% if 'offer_update' in user_permissions or 'user_information' in user_permissions %}
+                        <a href="/courier/requests/" class="nav_link"> <i class="bi bi-bus-front text-danger "></i><span class="nav_name text-danger">Kullanıcılar</span> </a>
+                    {% endif %}
+
+                    
                 </div>
             </div> 
             <a href="{% url 'user:logout_confirm' %}" class="nav_link"> <i class='bi bi-box-arrow-right nav_icon'></i> <span class="nav_name">Çıkış</span> </a>

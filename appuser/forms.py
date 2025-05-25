@@ -71,6 +71,33 @@ class ProfileForm(forms.ModelForm):
         return username
 
 
+class AddressForm(forms.Form):
+    new_address = forms.CharField(
+        label="Yeni Adres",
+        max_length=255,
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'Yeni adres ekleyin...', 'class': 'form-control'})
+    )
+    current_address = forms.ChoiceField(
+        label="Mevcut Adres Seçimi",
+        choices=[],
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        address_list = kwargs.pop('address_list', [])
+        current_index = kwargs.pop('current_index', 0)
+        super().__init__(*args, **kwargs)
+
+        choices = [(i, addr) for i, addr in enumerate(address_list)]
+        self.fields['current_address'].choices = choices
+        self.fields['current_address'].initial = current_index
+
+
+
+
+
 class RegisterForm(forms.ModelForm):
     first_name = forms.CharField(max_length=20,label="İsim")
     last_name = forms.CharField(max_length=20,label='Soyisim')

@@ -72,7 +72,7 @@ class AddNeedForm(forms.ModelForm):
             self.fields["last_name"].initial = appuser['last_name']
             try:
                 self.fields["address"].initial = appuser['address'][
-                    appuser.current_address
+                    appuser['current_address']
                 ]
             except:
                 pass

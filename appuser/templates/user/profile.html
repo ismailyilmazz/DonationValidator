@@ -59,12 +59,18 @@
     .table thead th {
         background-color: #f5f5f5;
     }
+    .list-group-item::before,
+    .list-group-item::after {
+        display: none !important;
+        content: none !important;
+    }
 </style>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-5">
         <div class="section-card">
-            <h4 class="mb-3">{{ user.firstname }} {{ user.lastname }}</h4>
+            <h4 class="mb-3">{{ user.first_name }} {{ user.last_name }}</h4>
+            <h5>Kullanıcı Bilgileri</h5>
             <form method="POST">
                 {% csrf_token %}
                 <div class="form-group input-pair">
@@ -76,10 +82,44 @@
                 <div class="form-group">{{ form.tel.label_tag }}{{ form.tel }}</div>
                 <button class="btn btn-primary w-100 mt-3">Kaydet</button>
             </form>
+            <div class="section-card mt-4">
+            <h5>Adreslerim</h5>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="address_update" value="1">
+                <div class="form-group">
+                    <label for="new_address">Yeni Adres</label>
+                    <input type="text" name="new_address" id="new_address" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="current_address">Varsayılan Adres</label>
+                    <select name="current_address" class="form-select">
+                        {% for addr in user.address %}
+                            <option value="{{ forloop.counter0 }}" {% if user.current_address == forloop.counter0 %}selected{% endif %}>
+                                {{ addr }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-2">Adresleri Güncelle</button>
+            </form>
+            <ul class="list-group list-group-flush mt-3">
+                {% for addr in user.address %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center {% if user.current_address == forloop.counter0 %}active{% endif %}">
+                        {{ addr }}
+                        {% if user.current_address != forloop.counter0 %}
+                            <a href="{% url 'user:delete_address' forloop.counter0 %}" class="btn btn-sm btn-danger" onclick="return confirm('Bu adresi silmek istediğinize emin misiniz?')"><i class="bi bi-trash"></i></a>
+                        {% else %}
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+            </ul>
+        </div>
         </div>
     </div>
 
-    <div class="col-md-8">
+    <div class="col-md-7">
         {% if user.role == "STK" or user.role == "ADMIN" %}
         <div class="section-card d-flex justify-content-end gap-2">
             <a class="btn btn-outline-success btn-sm" href="{% url 'need:import' %}">CSV ile İçe Aktar</a>

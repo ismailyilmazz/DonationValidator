@@ -136,6 +136,18 @@ def add_view(request):
         address = request.POST.get('address')
         if request.user.is_authenticated:
             needy = User.objects.get(username = request.user.username)
+            appuser=AppUser.objects.get(user=needy)
+            all_values = appuser.all_values()
+            if len(all_values["address"]) == 0: 
+                appuser.address = [address]
+                appuser.current_address = 0                
+            elif all_values["address"][all_values["current_address"]] != address:
+                new_address_list = all_values["address"] + [address]
+                print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", new_address_list)
+                appuser.address = new_address_list
+                appuser.current_address = len(new_address_list) - 1
+            appuser.save()
+
             need = Need(latitude=latitude,longitude=longitude,name=name,kind=kind,needy=needy,address=address)
             need.save()
         else:
@@ -149,7 +161,11 @@ def add_view(request):
                     role.save()
                 user = User(username=create_username(firstname=first_name),password=tel,first_name=first_name,last_name=last_name)
                 user.save()
-                AppUser.objects.create(tel=tel,user=user,role=role)
+                AppUser.objects.create(tel=tel,
+                                       user=user,
+                                       role=role,
+                                       address=[address] if address else [],
+                                        current_address=0 if address else -1,)
                 login(request=request,user=user)
                 latitude = latitude if latitude else 0
                 longitude = longitude if longitude else 0
