@@ -15,6 +15,7 @@ from django.utils.dateparse import parse_datetime, parse_date
 from django.contrib import messages
 from .utils import permission_required
 
+
 # Create your views here.
 
 def get_month_name(needs):
@@ -308,11 +309,11 @@ def export_offers(request):
     header = ['id', 'need_id', 'donor_name', 'status', 'created_at']
     rows = Offer.objects.values_list('id', 'need_id', 'donor__username', 'status', 'created')
     def row_gen():
-        yield ','.join(header) + '\n'
+        yield '\ufeff' + ','.join(header) + '\n'
         for row in rows:
             yield ','.join(str(item) for item in row) + '\n'
 
-    resp = StreamingHttpResponse(row_gen(), content_type="text/csv")
+    resp = StreamingHttpResponse(row_gen(), content_type="text/csv; charset=utf-8")
     resp['Content-Disposition'] = 'attachment; filename="offers.csv"'
     return resp
 
@@ -325,11 +326,11 @@ def export_needs(request):
     header = ['id', 'name', 'note', 'status', 'created_at']
     rows = Need.objects.values_list('id', 'name', 'note', 'status', 'created')
     def row_gen():
-        yield ','.join(header) + '\n'
+        yield '\ufeff' + ','.join(header) + '\n'
         for row in rows:
             yield ','.join(str(item) for item in row) + '\n'
 
-    resp = StreamingHttpResponse(row_gen(), content_type="text/csv")
+    resp = StreamingHttpResponse(row_gen(), content_type="text/csv; charset=utf-8")
     resp['Content-Disposition'] = 'attachment; filename="needs.csv"'
     return resp
 
@@ -343,7 +344,7 @@ def import_needs(request):
         form = NeedImportForm(request.POST, request.FILES)
         if form.is_valid():
             f = form.cleaned_data['csv_file']
-            decoded = f.read().decode('utf-8').splitlines()
+            decoded = f.read().decode('utf-8-sig').splitlines()
             reader = csv.DictReader(decoded)
 
             # Model alan isimleri listesi (id ve auto-added alanlar hariç)
