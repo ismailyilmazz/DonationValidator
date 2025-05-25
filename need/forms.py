@@ -4,6 +4,7 @@ from .models import Need, Kind, Offer
 from django.core.exceptions import ValidationError
 from appuser.models import AppUser,Role
 from django.utils.text import slugify
+from django.contrib.auth.models import User
 
 
 def validate_phone(value):
@@ -98,6 +99,20 @@ class RoleForm(forms.ModelForm):
         if self.instance and self.instance.permissions:
             self.initial['permissions'] = self.instance.permissions
 
+
+
+class DeliveryForm(forms.Form):
+    DELIVERY_CHOICES = [
+        ('self', 'Kendim Teslim Edeceğim'),
+        ('courier', 'Kurye Arıyorum'),
+    ]
+
+    delivery_method = forms.ChoiceField(
+        label='Teslimat Yöntemi',
+        choices=DELIVERY_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        required=True
+    )
 
 
 class OfferForm(forms.ModelForm):

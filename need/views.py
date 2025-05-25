@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect, get_object_or_404
 from .models import Need,Kind, Offer
-from .forms import AddNeedForm, OfferForm, RoleForm
+from .forms import AddNeedForm, OfferForm, RoleForm,DeliveryForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
@@ -23,14 +23,41 @@ def get_month_name(needs):
         need.month_name = months[need.created.month-1]
 
 def detail_view(request,year,month,day,slug):
+    
     try:
         need = Need.objects.get(created__year=year,created__month=month,created__day=day,slug=slug)
         try:
             offer = Offer.objects.get(need=need)
         except Offer.DoesNotExist:
             offer = None
+
         if need.needy == request.user or need.donor == request.user or need.status == 'publish':
-            return render(request,'need/detail.html',{'need':need,'offer':offer,'appuser':AppUser.objects.get(user=request.user).all_values()})
+            show_form = False
+            if request.user.is_authenticated:
+                if need.donor == request.user and need.status == 'donor_find':
+                    show_form = True
+
+            form = DeliveryForm(request.POST or None)
+            if request.method == 'POST':
+                form = DeliveryForm(request.POST)
+                if form.is_valid():
+                    delivery_method = form.cleaned_data['delivery_method']
+
+                    if delivery_method == 'self':
+                        need.status = 'transportation'
+                        offer.courier = request.user
+                        need.save()
+                        messages.success(request, "Teslimat kendiniz tarafından yapılacak olarak işaretlendi.")
+                    elif delivery_method == 'courier':
+                        need.status = 'courier_request'
+                        need.save()
+                        messages.success(request, "Kurye talebiniz iletildi.")
+
+                    return redirect(need.get_absolute_url())
+            else:
+                form = DeliveryForm()
+            offerable = need.status == 'publish' and need.needy != request.user
+            return render(request,'need/detail.html',{'offerable':offerable,'need':need,'show_form':show_form,'offer':offer,'form':form,'appuser':AppUser.objects.get(user=request.user).all_values()})
         return render(request,'need/detail.html',{'need':None})
     except ObjectDoesNotExist:
         return render(request,'need/detail.html',{'need':None})

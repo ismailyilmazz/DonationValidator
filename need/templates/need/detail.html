@@ -95,7 +95,7 @@
     {% toTurkish label as val %}
     <div class="step {% if is_active %}active{% else %}inactive{% endif %}">
       <div class="circle"></div>
-      <p>{{val}}</p>
+      <p style="font-size:0.8em">{{val}}</p>
     </div>
   {% endif %}
 {% endfor %}
@@ -116,9 +116,37 @@
               Henüz bir teklif yapılmamış.
             </div>
           {% endif %}
+          
+          {% if show_form %}
+            <form method="post">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label fw-bold">Teslimat Kararı:</label>
+                {% for radio in form.delivery_method %}
+                <div class="form-check">
+                  {{ radio.tag }}
+                  <label class="form-check-label">{{ radio.choice_label }}</label>
+                </div>
+                {% endfor %}
+              </div>
+
+              <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+          {% endif %}
+
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+            {% if offerable %}
+            <div class="row">
+              <a href="{% url 'need:offer' need.id %}" style="width:80%; margin-left:10%;" class="btn btn-success btn-sm mt-3">Bağış yap</a>
+              <div>
+            {% endif %}
+
+
           <a href="/" class="btn btn-outline-secondary mt-3"><i class="bi bi-arrow-left"></i> Geri Dön</a>
           {% if "need_delete" in appuser.permissions or need.needy.username == appuser.username %}
-          <a href="delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-outline-danger mt-3"><i class="bi bi-trash"></i> Sil</a>
+          <a href="/delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-outline-danger mt-3"><i class="bi bi-trash"></i> Sil</a>
           {% endif %}
         </div>
       </div>

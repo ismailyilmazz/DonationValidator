@@ -22,6 +22,8 @@ class Need(models.Model):
     STATUS_CHOICES = (
         ('publish','Publish'),
         ('donor_find','Donor_Find'),
+        ('courier_request','Courier_Request'),
+        ('courier_find','Courier_Find'),
         ('transportation','Transportation'),
         ('completed','Completed'),
         ('cancelled','Cancelled'),
@@ -81,6 +83,7 @@ class Offer(models.Model):
 
     need = models.ForeignKey(Need, on_delete=models.CASCADE, related_name='offers')
     donor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_offers')
+    courier = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     donor_first_name = models.CharField(max_length=50)
     donor_last_name = models.CharField(max_length=50)
     confirmed = models.BooleanField(default=False)
