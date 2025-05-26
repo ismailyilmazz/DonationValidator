@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect, get_object_or_404
 from .models import Need,Kind, Offer
-from .forms import AddNeedForm, OfferForm, RoleForm,DeliveryForm,BulkCourierForm,CourierWithdrawForm
+from .forms import AddNeedForm, OfferForm, RoleForm,DeliveryForm,BulkCourierForm,CourierWithdrawForm,DeliveryCodeForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
@@ -14,7 +14,13 @@ from django.contrib.auth.decorators import user_passes_test, login_required
 from django.utils.dateparse import parse_datetime, parse_date
 from django.contrib import messages
 from .utils import permission_required
-
+from django.utils.timezone import now, timedelta
+import random
+from django.utils.encoding import smart_str
+from django.db.models import Q
+from datetime import datetime, timedelta
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 # Create your views here.
 
@@ -23,64 +29,99 @@ def get_month_name(needs):
     for need in needs:
         need.month_name = months[need.created.month-1]
 
-def detail_view(request,year,month,day,slug):
-    
+        
+def detail_view(request, year, month, day, slug):
     try:
-        need = Need.objects.get(created__year=year,created__month=month,created__day=day,slug=slug)
-        try:
-            offer = Offer.objects.get(need=need)
-        except Offer.DoesNotExist:
-            offer = None
+        need = Need.objects.get(created__year=year, created__month=month, created__day=day, slug=slug)
+        offer = Offer.objects.filter(need=need).first()
+        form = DeliveryForm()
+        code_form = None
 
-        if need.needy == request.user or need.donor == request.user or need.status == 'publish':
+        if request.user.is_authenticated:
+            appuser = AppUser.objects.get(user=request.user).all_values()
             show_form = False
-            if request.user.is_authenticated:
-                if need.donor == request.user and need.status == 'donor_find':
-                    show_form = True
 
-            form = DeliveryForm(request.POST or None)
-            if request.method == 'POST':
-                form = DeliveryForm(request.POST)
-                if form.is_valid():
-                    delivery_method = form.cleaned_data['delivery_method']
+            # Kod formu gösterme koşulu:
+            if offer and offer.courier == request.user and offer.code:
+                code_form = DeliveryCodeForm(request.POST or None)
 
-                    if delivery_method == 'self':
-                        need.status = 'transportation'
-                        offer.courier = request.user
-                        need.save()
-                        messages.success(request, "Teslimat kendiniz tarafından yapılacak olarak işaretlendi.")
-                    elif delivery_method == 'courier':
-                        need.status = 'courier_request'
-                        need.save()
-                        messages.success(request, "Kurye talebiniz iletildi.")
+                if request.method == 'POST' and 'code' in request.POST:
+                    code_form = DeliveryCodeForm(request.POST)
+                    if code_form.is_valid():
+                        input_code = code_form.cleaned_data['code']
+                        if input_code == offer.code:
+                            need.status = 'completed'
+                            need.save()
+                            offer.status = 'completed'
+                            offer.save()
+                            messages.success(request, "Teslimat başarıyla tamamlandı.")
+                            return redirect(need.get_absolute_url())
+                        else:
+                            messages.error(request, "Geçersiz kod. Lütfen kontrol edin.")
 
-                    return redirect(need.get_absolute_url())
-            else:
-                form = DeliveryForm()
-            offerable = need.status == 'publish' and need.needy != request.user
-            return render(request,'need/detail.html',{'offerable':offerable,'need':need,'show_form':show_form,'offer':offer,'form':form,'appuser':AppUser.objects.get(user=request.user).all_values()})
-        return render(request,'need/detail.html',{'need':None})
+            # Teslimat seçimi formu (self / courier)
+            if need.donor == request.user and need.status == 'donor_find':
+                show_form = True
+                form = DeliveryForm(request.POST or None)
+                if request.method == 'POST' and 'delivery_method' in request.POST:
+                    form = DeliveryForm(request.POST)
+                    if form.is_valid():
+                        delivery_method = form.cleaned_data['delivery_method']
+                        if delivery_method == 'self':
+                            need.status = 'transportation'
+                            offer.courier = request.user
+                            need.save()
+                            offer.save()
+                            messages.success(request, "Teslimat kendiniz tarafından yapılacak olarak işaretlendi.")
+                        elif delivery_method == 'courier':
+                            need.status = 'courier_request'
+                            need.save()
+                            messages.success(request, "Kurye talebiniz iletildi.")
+                        return redirect(need.get_absolute_url())
+
+            return render(request, 'need/detail.html', {
+                'need': need,
+                'offer': offer,
+                'form': form,
+                'code_form': code_form,
+                'show_form': show_form,
+                'appuser': appuser,
+            })
+
+        else:
+            return render(request, 'need/detail.html', {
+                'need': need,
+                'offer': offer,
+                'form': None,
+                'code_form': None,
+                'show_form': False,
+                'appuser': None,
+            })
+
     except ObjectDoesNotExist:
-        return render(request,'need/detail.html',{'need':None})
+        return render(request, 'need/detail.html', {'need': None})
 
-def list_view(request):
-    needs = list(Need.publish.all())
-    get_month_name(needs)
-    paginator = Paginator(needs,25)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
-    kinds = list(Kind.objects.all())
+@login_required
+def generate_code(request, year, month, day, slug):
+    need = get_object_or_404(Need, created__year=year, created__month=month, created__day=day, slug=slug)
+    offer = get_object_or_404(Offer, need=need)
 
-    current = page.number
-    total = paginator.num_pages
-    start = max(current - 3, 1)
-    end = min(current + 3, total) + 1
-    page_range = range(start, end)
+    if request.user != offer.courier:
+        messages.error(request, "Bu işlemi yapma yetkiniz yok.")
+        return redirect(need.get_absolute_url())
 
-    if request.user.is_authenticated: 
-        return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'appuser':AppUser.objects.get(user=request.user).all_values(),'len':len(needs)})
-    else:
-        return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'appuser':None,'len':len(needs)})
+    if need.status != 'transportation':
+        messages.error(request, "Kod sadece taşımada olan ihtiyaçlar için oluşturulabilir.")
+        return redirect(need.get_absolute_url())
+
+    # Kod oluştur
+    import random
+    code = str(random.randint(100000, 999999))
+    offer.code = code
+    offer.save()
+    messages.success(request, f"Teslimat Kodu Oluşturuldu")
+
+    return redirect(need.get_absolute_url())
 
 
 def delete_need(request,year,month,day,slug):
@@ -93,16 +134,36 @@ def delete_need(request,year,month,day,slug):
         return redirect("/")        
     except ObjectDoesNotExist:
             return redirect("/")
+    
 
 
-def kind_view(request,slug):
-    kind = Kind.objects.get(slug=slug)
-    needs = Need.publish.filter(kind=kind)
-    get_month_name(needs)
-    paginator = Paginator(needs,25)
+def list_view(request):
+    needs = Need.publish.all()
+    query = request.GET.get('q', '')
+    kind_slug = request.GET.get('kind')
+    date_filter = request.GET.get('date')
+
+    if query:
+        needs = needs.filter(name__icontains=query)
+
+    kind_list = request.GET.getlist('kind')
+
+    if kind_list:
+        needs = needs.filter(kind__slug__in=kind_list)
+
+    if date_filter == 'today':
+        needs = needs.filter(created__date=now().date())
+    elif date_filter == '2days':
+        needs = needs.filter(created__date__gte=now().date() - timedelta(days=2))
+    elif date_filter == 'week':
+        needs = needs.filter(created__date__gte=now().date() - timedelta(days=7))
+
+    get_month_name(needs) 
+    paginator = Paginator(needs, 25)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    kinds = list(Kind.objects.all())
+
+    kinds = Kind.objects.all()
 
     current = page.number
     total = paginator.num_pages
@@ -110,7 +171,24 @@ def kind_view(request,slug):
     end = min(current + 3, total) + 1
     page_range = range(start, end)
 
-    return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
+    appuser = None
+    if request.user.is_authenticated:
+        appuser = AppUser.objects.get(user=request.user).all_values()
+
+    return render(request, 'need/list.html', {
+        'needs': page,
+        'page_range': page_range,
+        'page_obj': page,
+        'kinds': kinds,
+        'kind_list':kind_list,
+        'appuser': appuser,
+        'len': len(needs),
+        'query': query,
+        'date_filter': date_filter,
+        'kind_slug': kind_slug,
+    })
+
+
 
 def create_username(firstname):
     username = slugify(firstname)
@@ -134,6 +212,8 @@ def add_view(request):
         kind = request.POST.get('kind')
         kind = Kind.objects.get(id=kind)
         address = request.POST.get('address')
+        latitude = latitude if latitude else 0
+        longitude = longitude if longitude else 0
         if request.user.is_authenticated:
             needy = User.objects.get(username = request.user.username)
             appuser=AppUser.objects.get(user=needy)
@@ -167,13 +247,30 @@ def add_view(request):
                                        address=[address] if address else [],
                                         current_address=0 if address else -1,)
                 login(request=request,user=user)
-                latitude = latitude if latitude else 0
-                longitude = longitude if longitude else 0
                 need = Need(latitude=latitude,longitude=longitude,name=name,kind=kind,needy=user,address=address)
                 need.save()
             except ValidationError as e:
                 form.add_error('tel',e.message)
                 return render(request,'need/add.html',{'form':form})
+            
+
+        channel_layer = get_channel_layer()
+
+        async_to_sync(channel_layer.group_send)(
+            "global_chat",
+            {
+                "type": "new_need_added",
+                "need": {
+                    "name": need.name,
+                    "kind": need.kind.name,
+                    "created": str(need.created),
+                    "slug": need.slug,
+                    "pk": need.pk,
+                    "url": need.get_absolute_url(),
+                }
+            }
+        )
+            
         
         return redirect('/user/profile')
     else:
@@ -182,23 +279,6 @@ def add_view(request):
         else:
             form = AddNeedForm()
     return render(request,'need/add.html',{'form':form})
-
-def search_view(request):
-    name = request.GET.get('name')
-    needs = Need.publish.filter(name__icontains=name)
-    get_month_name(needs)
-    paginator = Paginator(needs,25)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
-    kinds = list(Kind.objects.all())
-
-    current = page.number
-    total = paginator.num_pages
-    start = max(current - 3, 1)
-    end = min(current + 3, total) + 1
-    page_range = range(start, end)
-
-    return render(request,'need/list.html',{'needs':page,'page_range':page_range,'page_obj':page,'kinds':kinds,'len':len(needs)})
 
 ################ COURIER ######################
 
@@ -323,6 +403,28 @@ def kind_update(request, slug):
 
 
 
+def kind_delete(request, slug):
+    if not request.user.is_authenticated:
+        return render(request, 'need/unauthorized.html')
+    
+    appuser = AppUser.objects.get(user=request.user).all_values()
+    if "category" not in appuser["permissions"]:
+        return render(request, 'need/unauthorized.html')
+    
+    kind = get_object_or_404(Kind, slug=slug)
+    linked_needs = Need.objects.filter(kind=kind)
+
+    if linked_needs.exists():
+        messages.error(request, f"Bu kategoriyi silemezsiniz. '{kind.name}' kategorisine bağlı ihtiyaçlar mevcut.")
+        return redirect('need:kind_list')
+
+    if request.method == 'POST':
+        kind.delete()
+        messages.success(request, f"{kind.name} başarıyla silindi.")
+        return redirect('need:kind_list')
+
+    return render(request, 'need/kind_confirm_delete.html', {'kind': kind})
+
 
 ########################################
 
@@ -338,7 +440,7 @@ def role_create(request):
         form = RoleForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('role_list')
+            return redirect('need:role_list')
     else:
         form = RoleForm()
     return render(request, 'role/role_form.html', {'form': form})
@@ -350,7 +452,7 @@ def role_update(request, slug):
         form = RoleForm(request.POST, instance=role)
         if form.is_valid():
             form.save()
-            return redirect('role_list')
+            return redirect('need:role_list')
     else:
         form = RoleForm(instance=role)
     return render(request, 'role/role_form.html', {'form': form})
@@ -360,6 +462,19 @@ def role_list(request):
     roles = Role.objects.all()
     permissions = Role.PERMISSION_CHOICES
     return render(request, 'role/role_list.html', {'roles': roles, 'permissions': permissions})
+
+
+@permission_required('role_delete')
+def role_delete(request, slug):
+    role = get_object_or_404(Role, slug=slug)
+
+    if AppUser.objects.filter(role=role).exists():
+        messages.error(request, f"{role.name} adlı rol, kullanıcılar tarafından kullanıldığı için silinemez.")
+        return redirect('need:role_list')
+
+    role.delete()
+    messages.success(request, f"{role.name} adlı rol başarıyla silindi.")
+    return redirect('need:role_list')
 
 
 
@@ -426,77 +541,188 @@ def mark_received_view(request, need_id):
 def is_admin(user):
     return user.is_staff or user.is_superuser
 
-def export_offers(request):
-    if not request.user.is_authenticated:
-        return render(request,"need/unauthorized.html",{"path":"/user/login"})
-    if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
-        return render(request,"need/unauthorized.html",{"path":"/user/login"})
 
-    header = ['id', 'need_id', 'donor_name', 'status', 'created_at']
-    rows = Offer.objects.values_list('id', 'need_id', 'donor__username', 'status', 'created')
-    def row_gen():
-        yield '\ufeff' + ','.join(header) + '\n'
-        for row in rows:
-            yield ','.join(str(item) for item in row) + '\n'
+########## IMOPORT EXPORT ########################
 
-    resp = StreamingHttpResponse(row_gen(), content_type="text/csv; charset=utf-8")
-    resp['Content-Disposition'] = 'attachment; filename="offers.csv"'
-    return resp
 
+# def export_offers(request):
+#     if not request.user.is_authenticated:
+#         return render(request,"need/unauthorized.html",{"path":"/user/login"})
+#     if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
+#         return render(request,"need/unauthorized.html",{"path":"/user/login"})
+
+#     header = ['id', 'need_id', 'donor_name', 'status', 'created_at']
+#     rows = Offer.objects.values_list('id', 'need_id', 'donor__username', 'status', 'created')
+#     def row_gen():
+#         yield '\ufeff' + ','.join(header) + '\n'
+#         for row in rows:
+#             yield ','.join(str(item) for item in row) + '\n'
+
+#     resp = StreamingHttpResponse(row_gen(), content_type="text/csv; charset=utf-8")
+#     resp['Content-Disposition'] = 'attachment; filename="offers.csv"'
+#     return resp
+
+@login_required
+@permission_required('data_export')
 def export_needs(request):
-    if not request.user.is_authenticated:
-        return render(request,"need/unauthorized.html",{"path":"/user/login"})
-    if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
-        return render(request,"need/unauthorized.html",{"path":"/user/login"})
+    query = request.GET.get('q', '')
+    kind_filter = request.GET.getlist('kind')
+    status_filter = request.GET.get('status')
 
-    header = ['id', 'name', 'note', 'status', 'created_at']
-    rows = Need.objects.values_list('id', 'name', 'note', 'status', 'created')
+    needs = Need.objects.all()
+
+    if query:
+        needs = needs.filter(Q(name__icontains=query) | Q(note__icontains=query) | Q(address__icontains=query))
+    if kind_filter:
+        needs = needs.filter(kind__slug__in=kind_filter)
+    if status_filter:
+        needs = needs.filter(status=status_filter)
+
+    header = ['İsim', 'Kategori', 'Not', 'Adres', 'Durum', 'Tarih']
+    rows = needs.values_list('name', 'kind__name', 'note', 'address', 'status', 'created')
+
     def row_gen():
         yield '\ufeff' + ','.join(header) + '\n'
         for row in rows:
-            yield ','.join(str(item) for item in row) + '\n'
+            row = [smart_str(item).replace('\n', ' ').replace(',', ' ') for item in row]
+            yield ','.join(row) + '\n'
 
     resp = StreamingHttpResponse(row_gen(), content_type="text/csv; charset=utf-8")
     resp['Content-Disposition'] = 'attachment; filename="needs.csv"'
     return resp
 
+
+
+@login_required
+@permission_required('data_import')
 def import_needs(request):
-    if not request.user.is_authenticated:
-        return render(request,"need/unauthorized.html",{"path":"/user/login"})
-    if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
-        return render(request,"need/unauthorized.html",{"path":"/user/login"})
+    if request.method == 'POST':
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            messages.error(request, "Dosya yüklenmedi.")
+            return redirect('need:import_needs')
 
-    if request.method == "POST":
-        form = NeedImportForm(request.POST, request.FILES)
-        if form.is_valid():
-            f = form.cleaned_data['csv_file']
-            decoded = f.read().decode('utf-8-sig').splitlines()
-            reader = csv.DictReader(decoded)
+        decoded = csv_file.read().decode('utf-8-sig').splitlines()
+        reader = csv.DictReader(decoded)
 
-            # Model alan isimleri listesi (id ve auto-added alanlar hariç)
-            field_names = {
-                f.name: f
-                for f in Need._meta.get_fields()
-                if getattr(f, 'editable', False) and not f.auto_created
-            }
+        # Sadece name, address, kind alınacak
+        preview_list = []
+        for row in reader:
+            preview_list.append({
+                'name': row.get('name', '').strip(),
+                'address': row.get('address', '').strip(),
+                'kind': row.get('kind', '').strip(),
+            })
 
-            for row in reader:
-                need = Need()
-                for col, val in row.items():
-                    # CSV'deki başlık modeldeki bir alanla birebir eşleşiyorsa ata
-                    if col in field_names and val != '':
-                        field = field_names[col]
-                        # Tarih/zaman alanıysa parse et
-                        if field.get_internal_type() in ('DateTimeField', 'DateField'):
-                            parsed = (parse_datetime(val) if field.get_internal_type()=='DateTimeField' 
-                                      else parse_date(val))
-                            setattr(need, col, parsed)
-                        else:
-                            setattr(need, col, val)
-                need.save()
+        request.session['imported_needs'] = preview_list
+        return redirect('need:import_confirm')
 
-            return redirect('need:list')
-    else:
-        form = NeedImportForm()
+    return render(request, 'import_export/import_needs.html')
 
-    return render(request, 'need/import.html', {'form': form})
+@login_required
+@permission_required('data_import')
+def import_confirm(request):
+    needs = request.session.get('imported_needs', [])
+    kinds = Kind.objects.all()  # Kategori listesi
+
+    if request.method == 'POST':
+        if 'delete' in request.POST:
+            index = int(request.POST['delete'])
+            if index < len(needs):
+                needs.pop(index)
+                request.session['imported_needs'] = needs
+                messages.success(request, "Seçilen satır silindi.")
+            return redirect('need:import_confirm')
+
+        elif 'confirm' in request.POST:
+            for i, data in enumerate(needs):
+                name = request.POST.get(f'name_{i}', data['name'])
+                address = request.POST.get(f'address_{i}', data['address'])
+                kind_name = request.POST.get(f'kind_{i}', data['kind'])
+                try:
+                    kind = Kind.objects.get(name=kind_name)
+                except Kind.DoesNotExist:
+                    messages.error(request, f"{name} için kategori bulunamadı.")
+                    continue
+
+                Need.objects.create(
+                    name=name,
+                    address=address,
+                    kind=kind,
+                    needy=request.user,                    
+                )
+
+            del request.session['imported_needs']
+            messages.success(request, "İhtiyaçlar başarıyla eklendi.")
+            return redirect('need:needs_list')
+
+    return render(request, 'import_export/import_confirm.html', {'needs': needs, 'kinds': kinds})
+
+
+
+@login_required
+@permission_required('data_export')
+def import_export_dashboard(request):
+    needs = Need.objects.exclude(status='completed')
+
+    # Filtreleme
+    name_query = request.GET.get('name', '')
+    if name_query:
+        needs = needs.filter(name__icontains=name_query)
+
+    kinds = request.GET.getlist('kind')
+    if kinds:
+        needs = needs.filter(kind__slug__in=kinds)
+
+    status_query = request.GET.get('status', '')
+    if status_query:
+        needs = needs.filter(status=status_query)
+
+    date_filter = request.GET.get('date', '')
+    now = datetime.now()
+
+    if date_filter == 'today':
+        needs = needs.filter(created__date=now.date())
+    elif date_filter == 'last_2_days':
+        needs = needs.filter(created__gte=now - timedelta(days=2))
+    elif date_filter == 'last_week':
+        needs = needs.filter(created__gte=now - timedelta(weeks=1))
+    elif date_filter == 'last_month':
+        needs = needs.filter(created__gte=now - timedelta(days=30))
+
+    # Paginator
+    paginator = Paginator(needs, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Export
+    if request.GET.get('export') == 'csv':
+        header = ['name', 'kind', 'note', 'status', 'address', 'created_at']
+        rows = needs.values_list('name', 'kind__name', 'note', 'status', 'address', 'created')
+
+        def row_gen():
+            yield '\ufeff' + ','.join(header) + '\n'
+            for row in rows:
+                row = [str(item).replace('\n', ', ').replace('\r', '') for item in row]
+                yield ','.join(row) + '\n'
+
+        resp = StreamingHttpResponse(row_gen(), content_type="text/csv; charset=utf-8")
+        resp['Content-Disposition'] = 'attachment; filename="needs.csv"'
+        return resp
+
+    kinds_list = Kind.objects.all()
+    return render(
+        request,
+        'import_export/import_export_dashboard.html',
+        {
+            'needs': page_obj,
+            'selected_kinds': kinds,
+            'kinds': kinds_list,
+            'page_obj': page_obj,
+        }
+    )
+
+
+
+
+##################################

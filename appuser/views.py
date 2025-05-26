@@ -57,7 +57,10 @@ def profile_view(request):
         return redirect('/user/login/')
 
     appuser = AppUser.objects.get(user=request.user)
-    user_needs = Need.objects.filter(needy=request.user).order_by('-created')
+    user_needs = list(Need.objects.filter(needy=request.user).order_by('-created'))
+    delivered_needs = [n for n in user_needs if n.status == 'completed']
+    other_needs = [n for n in user_needs if n.status != 'completed']
+    user_needs = other_needs + delivered_needs
     user_offers = Offer.objects.filter(donor=request.user).order_by('-created')
     user_dict = appuser.all_values()
     needs = Need.objects.filter(needy=request.user)

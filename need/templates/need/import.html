@@ -1,9 +1,0 @@
-{% extends "need/base.html" %}
-{% block content %}
-  <h2>İhtiyaç Listesini CSV'den İçe Aktar</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">İçe Aktar</button>
-  </form>
-{% endblock %}

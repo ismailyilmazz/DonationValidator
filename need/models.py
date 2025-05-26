@@ -37,8 +37,8 @@ class Need(models.Model):
     kind=models.ForeignKey(Kind,on_delete=models.CASCADE)
     status=models.CharField(max_length=20,choices=STATUS_CHOICES,default='publish')
     address=models.CharField(max_length=100,blank=True,null=True)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    latitude = models.FloatField(default=0)
+    longitude = models.FloatField(default=0)
     note=models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -71,6 +71,9 @@ class Need(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering = ['-created']
 
 
 class Offer(models.Model):
@@ -89,6 +92,7 @@ class Offer(models.Model):
     confirmed = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     note = models.TextField(blank=True)
+    code = models.CharField(blank=True,max_length=6,null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 

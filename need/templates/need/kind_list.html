@@ -17,13 +17,19 @@
       </div>
     </div>
   </form>
-
+  {% if messages %}
+    <div class="alert alert-warning">
+      {% for message in messages %}
+        <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
   <table class="table table-striped">
     <thead>
       <tr>
         <th>İsim</th>
         <th>Slug</th>
-        <th>İşlemler</th>
+        <th style="width:100px;">İşlemler</th>
       </tr>
     </thead>
     <tbody>
@@ -32,7 +38,8 @@
         <td>{{ kind.name }}</td>
         <td>{{ kind.slug }}</td>
         <td>
-          <a href="{% url 'need:kind_update' kind.slug %}" class="btn btn-sm btn-warning">Düzenle</a>
+          <a href="{% url 'need:kind_update' kind.slug %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+          <a href="{% url 'need:kind_delete' kind.slug %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
           {% comment %} <a href="{% url 'need:kind_delete' kind.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğine emin misin?');">Sil</a> {% endcomment %}
         </td>
       </tr>

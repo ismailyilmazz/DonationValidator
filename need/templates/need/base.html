@@ -10,6 +10,7 @@
     <title>User</title>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
 
@@ -208,9 +209,8 @@
     <div class="l-navbar" id="nav-bar">
         <nav class="nav">
             <div> 
-                <a href="#" class="nav_logo"> <i class="bi nav_icon bi-layers-fill" ></i> <span class="nav_logo-name">NAV</span> </a>
+                <a href="/" class="nav_logo"> <i class="bi nav_icon bi-layers-fill" ></i> <span class="nav_logo-name">NAV</span> </a>
                 <div class="nav_list"> 
-                    <a href="/" class="nav_link"><i class="bi nav_icon bi-house-fill" ></i> <span class="nav_name">Ana menü</span> </a> 
                     <a href="/" class="nav_link"> <i class="bi nav_icon bi-view-list" ></i> <span class="nav_name">Liste</span> </a> 
                     <a href="/user/profile/" class="nav_link"><i class="bi nav_icon bi-person" ></i> <span class="nav_name">Profil</span> </a>
                     <a href="/user/account-summary/" class="nav_link"> <i class="bi nav_icon bi-person-lines-fill" ></i><span class="nav_name">Hesap Özeti</span></a>
@@ -219,7 +219,7 @@
                         <a href="/kinds/" class="nav_link"> <i class="bi nav_icon bi-tags-fill text-danger" ></i> <span class="nav_name text-danger">Kategoriler</span> </a>
                     {% endif %}
                     {% if 'data_import' in user_permissions or 'data_export' in user_permissions %}
-                        <a href="/import-export/" class="nav_link"><i class="bi nav_icon bi-file-earmark-break-fill text-danger" ></i> <span class="nav_name text-danger">İçe - Dışa Aktar</span> </a>
+                        <a href="/import-export-dashboard/" class="nav_link"><i class="bi nav_icon bi-file-earmark-break-fill text-danger" ></i> <span class="nav_name text-danger">İçe - Dışa Aktar</span> </a>
                     {% endif %}
                     {% if 'role_update' in user_permissions or 'role_add' in user_permissions %}
                         <a href="/roles/" class="nav_link"> <i class="bi nav_icon bi-person-vcard-fill text-danger" ></i> <span class="nav_name text-danger">Roller</span> </a>
@@ -248,36 +248,8 @@
             {% block content %}{% endblock content %}
         </div>
     </div>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 
-    <script>
-         const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/");
-
-        socket.onmessage = function (e) {
-            const data = JSON.parse(e.data);
-            console.log("Gelen tür:", data.type);
-            console.log("Sunucudan:", data.message);
-        };
-
-        socket.onopen = function () {
-            socket.send(JSON.stringify({ message: "Merhaba!" }));
-        }; 
-
-
-
-        document.addEventListener("keypress", function (e) {
-            console.log("Basılan tuş:", e.key);
-
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    type: "keypress",
-                    key: e.key
-                }));
-            }
-
-        }); 
-    </script>
 
 
     <script>

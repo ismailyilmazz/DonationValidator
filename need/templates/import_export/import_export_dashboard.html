@@ -1,0 +1,97 @@
+{% extends 'need/base.html' %}
+{% load querystring %}
+{% block content %}
+<div class="container py-4">
+  <h2>İçe/Dışa Aktarım</h2>
+
+  <div class="row">
+    <div class="col-md-8">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>İsim</th>
+            <th>Adres</th>
+            <th>Kategori</th>
+            <th>Durum</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for need in needs %}
+          <tr>
+            <th>{{ forloop.counter }}</th>
+            <td>{{ need.name }}</td>
+            <td>{{ need.address }}</td>
+            <td>{{ need.kind }}</td>
+            <td>{{ need.get_status_display }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Paginator -->
+      <nav>
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?{% querystring page=page_obj.previous_page_number %}">Geri</a>
+          </li>
+          {% endif %}
+
+          <li class="page-item active">
+            <a class="page-link">{{ page_obj.number }}</a>
+          </li>
+
+          {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?{% querystring page=page_obj.next_page_number %}">İleri</a>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+
+    <div class="col-md-4">
+      <form method="get" class="d-flex flex-column gap-3">
+        <input type="text" name="name" class="form-control" placeholder="İhtiyaç Ara..." value="{{ request.GET.name }}">
+
+        <div>
+          <label class="form-label fw-bold">Kategoriler:</label><br>
+          {% for k in kinds %}
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" name="kind" value="{{ k.slug }}" {% if k.slug in selected_kinds %}checked{% endif %}>
+              <label class="form-check-label">{{ k.name }}</label>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div>
+          <label class="form-label fw-bold">Durum:</label>
+          <select name="status" class="form-select">
+            <option value="">Tümü</option>
+            <option value="publish" {% if request.GET.status == 'publish' %}selected{% endif %}>Yayında</option>
+            <option value="donor_find" {% if request.GET.status == 'donor_find' %}selected{% endif %}>Bağışçı Bulundu</option>
+            <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Tamamlandı</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="form-label fw-bold">Tarih:</label>
+          <select name="date" class="form-select">
+            <option value="">Tümü</option>
+            <option value="today" {% if request.GET.date == 'today' %}selected{% endif %}>Bugün</option>
+            <option value="last_2_days" {% if request.GET.date == 'last_2_days' %}selected{% endif %}>Son 2 Gün</option>
+            <option value="last_week" {% if request.GET.date == 'last_week' %}selected{% endif %}>Son Hafta</option>
+            <option value="last_month" {% if request.GET.date == 'last_month' %}selected{% endif %}>Son Ay</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Filtrele</button>
+
+        <a href="?{% querystring export='csv' %}" class="btn btn-success">CSV İndir</a>
+        <a href="{% url 'need:import_needs' %}" class="btn btn-secondary">CSV Yükle</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

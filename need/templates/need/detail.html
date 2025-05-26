@@ -143,6 +143,34 @@
               <div>
             {% endif %}
 
+                {% if code_form  and need.status != 'completed'  %}
+                  <hr>
+                  <h5>Teslimat Kodu Doğrulama</h5>
+                  <form method="post">
+                    {% csrf_token %}
+                    {{ code_form.code.label_tag }}
+                    {{ code_form.code }}
+                    <button type="submit" class="btn btn-success mt-2">Kodu Doğrula ve Teslim Et</button>
+                  </form>
+                {% endif %}
+
+
+            {% if request.user == offer.courier and need.status == 'transportation' and not offer.code  and need.status != 'completed'  %}
+                <form method="post" action="{% url 'need:generate_code' need.created.year need.created.month need.created.day need.slug %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning mt-3">
+                        <i class="bi bi-key-fill"></i> Kod Oluştur
+                    </button>
+                </form>
+            {% endif %}
+
+            {% if request.user == need.needy and offer.code and need.status != 'completed' %}
+                <div class="alert alert-info">
+                    <strong>Teslimat Kodu:</strong> {{ offer.code }}
+                </div>
+            {% endif %}
+
+
 
           <a href="/" class="btn btn-outline-secondary mt-3"><i class="bi bi-arrow-left"></i> Geri Dön</a>
           {% if "need_delete" in appuser.permissions or need.needy.username == appuser.username %}

@@ -5,7 +5,7 @@
 
     <form method="get" class="d-flex gap-2 mb-3">
         <input type="text" name="q" class="form-control" placeholder="Adres ara..." value="{{ query }}">
-        <button class="btn btn-primary" type="submit">Ara</button>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>
 
     <form method="post">
@@ -26,6 +26,7 @@
                     <tr>
                         <th>Seç</th>
                         <th>İhtiyaç</th>
+                        <th>Tür</th>
                         <th>Adres</th>
                     </tr>
                 </thead>
@@ -36,6 +37,7 @@
                             <input type="checkbox" name="needs" value="{{ need.id }}" class="need-checkbox">
                         </td>
                         <td>{{ need.name }}</td>
+                        <td>{{ need.kind }}</td>
                         <td>{{ need.address }}</td>
                     </tr>
                     {% empty %}

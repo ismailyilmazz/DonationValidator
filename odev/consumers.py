@@ -1,5 +1,4 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
 import json
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -31,11 +30,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-    async def broadcast_keypress(self, event):
-        print(">> GRUPTAKİ BİRİNE GÖNDERİLİYOR")
-        key = event["key"]
+    async def new_need_added(self, event):
         await self.send(text_data=json.dumps({
-            "type": "keypress",
-            "key": key,
-            "message": f"{key} tuşuna basıldı"
+            "type": "new_need",
+            "need": event["need"]
         }))
+
+

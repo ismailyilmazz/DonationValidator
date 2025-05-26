@@ -62,6 +62,20 @@
   .filter-box a:hover{
     color:rgba(0,0,0,0.8);
   }
+  @keyframes highlight {
+  from {
+    background-color: #d1e7dd;  /* Açık yeşil (success) */
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.need-newly-added {
+  animation: highlight 2s ease-out;
+}
+
+
 
 </style>
 
@@ -78,9 +92,9 @@
 
 <div class="row">
   <div class="col-md-9">
-    <ul class="list-group">
+    <ul class="list-group" id="needList" >
       {% for need in needs %}
-      <li class="list-group-item need-item row" style="display:flex; flex-direction:row;padding:1em">
+      <li class="list-group-item need-item row"style="display:flex; flex-direction:row;padding:1em">
         <div class="need-date col-1">
           <p>{{ need.created.day }}</p>
           <p><b>{{ need.month_name }}</b></p>
@@ -168,31 +182,91 @@
   </div>
 
   <div class="col-md-3">
-    <div class="search-bar-box">
-      <input id="searchInput" class="form-control" type="text" placeholder="Ara..." />
-      <button class="btn btn-outline-dark" onclick="search()">Ara</button>
-    </div>
 
-    <h3>Filtre</h3>
-    <ul class="filter-box list-group" style="list-style-type:none;">
-      <p class="mb-2 text-danger">Tür</p>
-      <a href="/">
-        <li class="list-group-item">Hepsi</li>
-      </a>
-      {% for kind in kinds %}
-      <a href="/kind/{{ kind.slug }}">
-        <li class="list-group-item">{{ kind.name }}</li>
-      </a>
-      {% endfor %}
-    </ul>
+    <form method="get" class="row g-2 align-items-center mb-4">
+      <h3>Filtre</h3>
+      <div class="row mt-2">
+        <input type="text" name="q" value="{{ query }}" placeholder="İhtiyaç Ara..." class="form-control">
+      </div>
+
+      <div class="row mt-2">
+        <select name="date" class="form-select">
+          <option value="">Tarih Seçin</option>
+          <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Bugün</option>
+          <option value="2days" {% if date_filter == '2days' %}selected{% endif %}>Son 2 Gün</option>
+          <option value="week" {% if date_filter == 'week' %}selected{% endif %}>Son 1 Hafta</option>
+        </select>
+      </div>
+
+      <div class="row mt-4 mb-4">
+        <div class="d-flex flex-wrap gap-2">
+          <h5>Tür</h5>
+          {% for k in kinds %}
+            <div class="form-check w-100">
+              <input class="form-check-input" type="checkbox" name="kind" value="{{ k.slug }}"
+                    {% if k.slug in kind_list %}checked{% endif %} id="kind-{{ k.slug }}">
+              <label class="form-check-label" for="kind-{{ k.slug }}">
+                {{ k.name }}
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="row mt-2 d-grid">
+        <button type="submit" class="btn btn-primary">Filtrele</button>
+      </div>
+      <div class="row mt-2 d-grid">
+        <a href="/" class="link">Filtreyi temizle</a>
+      </div>
+      
+    </form>
+
+
   </div>
 </div>
+
+<script>
+  const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/");
+  socket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    console.log(data);
+    if (data.type === "new_need") {
+      const need = data.need;
+      let newItem = document.createElement("li");
+      newItem.className = "list-group-item need-newly-added need-item row";
+      newItem.setAttribute("style","display:flex; flex-direction:row;padding:1em")
+      const row = `
+          <div class="need-date col-1">
+            <p>${new Date(need.created).getDate()}</p>
+            <p><b>${new Date(need.created).toLocaleString('tr-TR', { month: 'long' })}</b></p>
+          </div>
+
+          <div class="need-name col-8">
+            <p>${need.name}</p>
+            <p style="margin-left:1em"><b>${need.kind}</b></p>
+          </div>
+
+          <div class="need-actions col-3">
+            <div class="col" style="display:flex;align-items:center;justify-content:space-around; ">
+              <a href="${need.url}" class="btn btn-outline-primary btn-sm">Detay</a>
+            </div>
+          </div>`;
+      newItem.innerHTML = row;
+      let needList = document.getElementById("needList");
+      needList.prepend(newItem);
+      setTimeout(() => {
+        newItem.classList.remove("need-newly-added");
+      }, 2000);
+    }
+  };
+</script>
 
 <script>
   const search = () => {
     const input = document.getElementById('searchInput').value.trim();
     if (input) {
-      window.location.href = '/search?name=' + encodeURIComponent(input);
+      window.location.href = 'search?name=' + encodeURIComponent(input);
     }
   }
 

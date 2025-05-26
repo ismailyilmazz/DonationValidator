@@ -67,7 +67,7 @@
 </style>
 
 <div class="row">
-    <div class="col-md-5">
+    <div class="col-md-6">
         <div class="section-card">
             <h4 class="mb-3">{{ user.first_name }} {{ user.last_name }}</h4>
             <h5>Kullanıcı Bilgileri</h5>
@@ -82,9 +82,14 @@
                 <div class="form-group">{{ form.tel.label_tag }}{{ form.tel }}</div>
                 <button class="btn btn-primary w-100 mt-3">Kaydet</button>
             </form>
-            <div class="section-card mt-4">
-            <h5>Adreslerim</h5>
             
+            
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="section-card">
+            <h5>Adreslerim</h5>
             <form method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="address_update" value="1">
@@ -115,12 +120,10 @@
                     </li>
                     {% endfor %}
             </ul>
-        </div>
-        </div>
-    </div>
 
-    <div class="col-md-7">
-        {% if user.role == "STK" or user.role == "ADMIN" %}
+        </div>
+
+        {% comment %} {% if user.role == "STK" or user.role == "ADMIN" %}
         <div class="section-card d-flex justify-content-end gap-2">
             <a class="btn btn-outline-success btn-sm" href="{% url 'need:import' %}">CSV ile İçe Aktar</a>
             <a class="btn btn-outline-success btn-sm" href="{% url 'need:export_needs' %}">İhtiyaçları Dışa Aktar</a>
@@ -144,7 +147,7 @@
             {% empty %}
             <p class="text-muted">Henüz bir ihtiyaç eklenmemiş.</p>
             {% endfor %}
-        </div>
+        </div> {% endcomment %}
     </div>
 </div>
 
@@ -174,6 +177,12 @@
                                 <span class="badge bg-success">Aktif</span>
                                 {% elif need.status == 'donor_find' %}
                                 <span class="badge bg-warning">Bağışçı Bulundu</span>
+                                {% elif need.status == 'courier_request' %}
+                                <span class="badge bg-warning">Taşıyıcı Aranıyor</span>
+                                {% elif need.status == 'courier_find' %}
+                                <span class="badge bg-warning">Taşıyıcı Bulundu</span>
+                                {% elif need.status == 'transportation' %}
+                                <span class="badge bg-warning">Taşımada</span>
                                 {% elif need.status == 'completed' %}
                                 <span class="badge bg-primary">Tamamlandı</span>
                                 {% else %}
@@ -224,12 +233,20 @@
                             <td>{{ offer.need.name }}</td>
                             <td>{{ offer.need.needy.first_name }} {{ offer.need.needy.last_name }}</td>
                             <td>
-                                {% if offer.status == 'pending' %}
-                                <span class="badge bg-warning">Beklemede</span>
-                                {% elif offer.status == 'completed' %}
-                                <span class="badge bg-success">Tamamlandı</span>
+                                {% if offer.need.status == 'publish' %}
+                                <span class="badge bg-success">Aktif</span>
+                                {% elif offer.need.status == 'donor_find' %}
+                                <span class="badge bg-warning">Bağışçı Bulundu</span>
+                                {% elif offer.need.status == 'courier_request' %}
+                                <span class="badge bg-warning">Taşıyıcı Aranıyor</span>
+                                {% elif offer.need.status == 'courier_find' %}
+                                <span class="badge bg-warning">Taşıyıcı Bulundu</span>
+                                {% elif offer.need.status == 'transportation' %}
+                                <span class="badge bg-warning">Taşımada</span>
+                                {% elif offer.need.status == 'completed' %}
+                                <span class="badge bg-primary">Tamamlandı</span>
                                 {% else %}
-                                <span class="badge bg-secondary">{{ offer.get_status_display }}</span>
+                                <span class="badge bg-secondary">{{ offer.need.get_status_display }}</span>
                                 {% endif %}
                             </td>
                             <td>{{ offer.created|date:"d.m.Y" }}</td>

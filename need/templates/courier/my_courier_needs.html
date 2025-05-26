@@ -5,7 +5,7 @@
 
     <form method="get" class="d-flex gap-2 mb-3">
         <input type="text" name="q" value="{{ query }}" placeholder="Adres ara..." class="form-control">
-        <button type="submit" class="btn btn-outline-primary">Ara</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
     </form>
 
     <form method="post">
@@ -26,18 +26,27 @@
                     <tr>
                         <th>Seç</th>
                         <th>İhtiyaç</th>
+                        <th>Tür</th>
                         <th>Adres</th>
+                        <th>Detay</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for need in page_obj %}
-                    <tr>
-                        <td>
-                            <input type="checkbox" name="needs" value="{{ need.id }}" class="need-checkbox">
-                        </td>
-                        <td>{{ need.name }}</td>
-                        <td>{{ need.address }}</td>
-                    </tr>
+                    {% if need.status != 'completed' %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="needs" value="{{ need.id }}" class="need-checkbox">
+                            </td>
+                            <td>{{ need.name }}</td>
+                            <td>{{ need.kind }}</td>
+                            <td>{{ need.address }}</td>
+                            <td>
+                            <a href="/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/"
+                                class="link">Detay</a>
+                            </td>
+                        </tr>
+                    {% endif %}
                     {% empty %}
                     <tr><td colspan="3" class="text-center">Sonuç bulunamadı.</td></tr>
                     {% endfor %}

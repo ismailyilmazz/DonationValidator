@@ -13,12 +13,13 @@ class Role(models.Model):
         ("need_update","Need_Update"),
         ("need_information","Need_Information"),
         ("need_delete","Need_Delete"),
-        ("role_add","Role_Add"),
         ("user_delete","User_Delete"),
         ("user_information","User_Information"),
         ("data_import","Data_Import"),
         ("data_export","Data_Export"),
         ("role_update","Role_Update"),
+        ("role_add","Role_Add"),
+        ("role_delete","Role_Delete"),
         ("offer_update","Offer_Update"),
         ("category","Category")
     )

@@ -1,0 +1,9 @@
+{% extends 'need/base.html' %}
+{% block content %}
+<h2>CSV Yükle</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="csv_file" accept=".csv" class="form-control mb-3">
+    <button class="btn btn-primary">Yükle ve Önizle</button>
+</form>
+{% endblock %}

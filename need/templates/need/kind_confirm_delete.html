@@ -1,0 +1,11 @@
+{% extends 'need/base.html' %}
+{% block content %}
+<div class="container py-5">
+    <h3>"{{ kind.name }}" kategorisini silmek istediğinize emin misiniz?</h3>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Evet, Sil</button>
+        <a href="{% url 'need:kind_list' %}" class="btn btn-secondary">İptal</a>
+    </form>
+</div>
+{% endblock %}

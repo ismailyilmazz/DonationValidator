@@ -82,6 +82,14 @@ class AddNeedForm(forms.ModelForm):
             field.widget.attrs["class"] = "form-control"
 
 
+class DeliveryCodeForm(forms.Form):
+    code = forms.CharField(
+        label="Teslimat Kodu",
+        max_length=6,
+        min_length=6,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "6 haneli teslimat kodunu girin"})
+    )
+
 
 class RoleForm(forms.ModelForm):
     permissions = forms.MultipleChoiceField(
