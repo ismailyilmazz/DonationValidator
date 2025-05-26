@@ -5,10 +5,10 @@ from . import views
 from .views import CustomPasswordResetConfirmView
 
 
-appname='user'
+app_name='user'
 urlpatterns=[
     path('register/',register_view),
-    path('login/',login_view),
+    path('login/',login_view,name='login'),
     path('profile/',profile_view),
     path('profile/address/delete/<int:index>/', views.delete_address, name='delete_address'),
     path('logout/', logout_confirm_view, name='logout_confirm'),
@@ -16,10 +16,11 @@ urlpatterns=[
     path('stk_page/', stk_page_view, name='stk_page'),
     path('account-summary/', account_summary_view, name='account-summary'),
     path('user/profile/', views.profile_view, name='profile'),
-    path('password_reset/', auth_views.PasswordResetView.as_view(template_name='user/password_reset.html'), name='password_reset'),
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='user/password_reset_done.html'), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/',CustomPasswordResetConfirmView.as_view(template_name='user/password_reset_confirm.html'), name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='user/password_reset_complete.html'), name='password_reset_complete'),
+    #### ESET PASSWORD
+    path('password-reset/', views.request_password_reset, name='request_password_reset'),
+    path('reset-password/<str:token>/', views.reset_password, name='reset_password'),
+
+    #######
     ###### USER
     path('users/', views.user_list, name='user_list'),
     path('users/<slug:username>/', views.user_detail, name='user_detail'),

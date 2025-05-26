@@ -14,6 +14,12 @@
         {% csrf_token %}
         <a href="{% url 'user:profile' %}" class="btn btn-secondary mt-3">Vazgeç</a>
         <button type="submit" class="btn btn-danger mt-3">Evet</button>
+
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+                </div>
+        {% endfor %}
     </form>
 </div>
 {% endblock %}

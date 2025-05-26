@@ -1,11 +1,162 @@
 {% extends 'need/base.html' %}
 {% load querystring %}
 {% block content %}
-<div class="container py-4">
+
+<style>
+  .container-in {
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 16px;
+}
+
+h2 {
+  text-align: center;
+  color: #4b24e8;
+  margin-bottom: 30px;
+}
+
+/* Tablo */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+table thead tr {
+  background-color: #4b24e8;
+  color: white;
+}
+
+table th, table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+table tr:hover {
+  background-color: #f2f2f2;
+}
+
+/* Paginator */
+.pagination {
+  display: flex;
+  list-style: none;
+  padding-left: 0;
+  justify-content: center;
+  margin: 20px 0 0;
+}
+
+.pagination li {
+  margin: 0 5px;
+}
+
+.pagination a, .pagination .page-link {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: #4b24e8;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.pagination .active .page-link {
+  background-color: #28a745;
+}
+
+.pagination a:hover {
+  background-color: #3a1cc1;
+}
+
+/* Form - Filtre Paneli */
+form.d-flex {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+form input[type="text"],
+form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+form label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  display: block;
+  color: #333;
+}
+
+form .form-check {
+  margin-bottom: 8px;
+}
+
+form .form-check-input {
+  margin-right: 6px;
+}
+
+form .btn {
+  display: block;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+form .btn-primary {
+  background-color: #4b24e8;
+}
+
+form .btn-primary:hover {
+  background-color: #3a1cc1;
+}
+
+form .btn-success {
+  background-color: #28a745;
+}
+
+form .btn-success:hover {
+  background-color: #218838;
+}
+
+form .btn-secondary {
+  background-color: #6c757d;
+}
+
+form .btn-secondary:hover {
+  background-color: #5a6268;
+}
+  .filter-form{
+    padding:0.5em;
+  }
+  .filter-form>.row {
+    margin-top:1em;
+  }
+  .form-check{
+    margin-top:0.5em;
+    display:flex;
+  }
+  .form-check>.form-check-label{
+    margin:0;
+  }
+
+</style>
+
+
+<div class="container-in py-4">
   <h2>İçe/Dışa Aktarım</h2>
 
   <div class="row">
-    <div class="col-md-8">
+    <div class="col-8">
       <table class="table table-striped">
         <thead>
           <tr>
@@ -51,14 +202,14 @@
       </nav>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-4">
       <form method="get" class="d-flex flex-column gap-3">
         <input type="text" name="name" class="form-control" placeholder="İhtiyaç Ara..." value="{{ request.GET.name }}">
 
-        <div>
-          <label class="form-label fw-bold">Kategoriler:</label><br>
+        <div class="filter-form">
+          <label class="form-label fw-bold">Kategoriler:</label>
           {% for k in kinds %}
-            <div class="form-check">
+            <div class="row form-check">
               <input type="checkbox" class="form-check-input" name="kind" value="{{ k.slug }}" {% if k.slug in selected_kinds %}checked{% endif %}>
               <label class="form-check-label">{{ k.name }}</label>
             </div>
@@ -90,6 +241,12 @@
 
         <a href="?{% querystring export='csv' %}" class="btn btn-success">CSV İndir</a>
         <a href="{% url 'need:import_needs' %}" class="btn btn-secondary">CSV Yükle</a>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
       </form>
     </div>
   </div>

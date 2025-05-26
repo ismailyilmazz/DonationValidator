@@ -4,7 +4,7 @@
 
 <div class="container mt-4">
     <div class="row">
-        <div class="col-md-8 offset-md-2">
+        <div class="col-8 offset-md-2">
             <div class="card">
                 <div class="card-header">
                     <h4 class="mb-0">Bağış Teklifi</h4>
@@ -64,6 +64,12 @@
                             bağışınızı teslim etmeniz gerekmektedir. Lütfen sadece gerçekten yerine getirebileceğiniz
                             teklifler yapın.
                         </div>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="/" class="btn btn-secondary me-md-2">İptal</a>

@@ -1,6 +1,164 @@
 {% extends "need/base.html" %}
 {% block content %}
-<div class="container py-5">
+
+<style>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+.container-in {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+  color: #4b24e8;
+  margin-bottom: 25px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+form .mb-3 {
+  display: flex;
+  flex-direction: column;
+}
+
+form label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form textarea {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+}
+
+form input:focus,
+form textarea:focus {
+  border-color: #4b24e8;
+  outline: none;
+}
+
+/* Checkbox alanı */
+form .form-check {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+form .form-check input[type="checkbox"] {
+  margin-right: 8px;
+  width: 16px;
+  height: 16px;
+  accent-color: #4b24e8;
+}
+
+form .form-check label {
+  font-weight: normal;
+  margin-top:auto;
+  margin-bottom:auto;
+  color: #333;
+}
+
+/* Butonlar */
+form button,
+form a.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+form button.btn-success {
+  background-color: #28a745;
+}
+
+form button.btn-success:hover {
+  background-color: #218838;
+}
+
+form a.btn-secondary {
+  background-color: #6c757d;
+}
+
+form a.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+
+/* Form genel stil */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Dikey sıralı checkbox listesi */
+.permissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  max-height: none; /* Taşma olmasın */
+}
+
+/* Her bir checkbox elemanı */
+.permissions-list .form-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.permissions-list .form-check input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #4b24e8;
+}
+
+.permissions-list .form-check label {
+  font-weight: normal;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+
+
+/* Responsive */
+@media (max-width: 600px) {
+  .container {
+    margin: 20px;
+  }
+}
+</style>
+
+
+<div class="container-in py-5">
   <h2>Rol Formu</h2>
 
   <form method="POST">
@@ -15,7 +173,7 @@
     </div>
     <div class="mb-3">
       <label class="form-label">İzinler</label>
-      <div class="form-check">
+      <div class="permissions-list">
         {% for checkbox in form.permissions %}
           <div class="form-check">
             {{ checkbox.tag }} <label class="form-check-label">{{ checkbox.choice_label }}</label>
@@ -24,6 +182,11 @@
       </div>
     </div>
 
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
     <button type="submit" class="btn btn-success">Kaydet</button>
     <a href="{% url 'need:role_list' %}" class="btn btn-secondary">İptal</a>
   </form>

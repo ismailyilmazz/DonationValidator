@@ -6,6 +6,12 @@
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Evet, Sil</button>
         <a href="{% url 'need:kind_list' %}" class="btn btn-secondary">İptal</a>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
     </form>
 </div>
 {% endblock %}

@@ -1,6 +1,138 @@
 {% extends "need/base.html" %}
 {% block content %}
-<div class="container">
+
+
+<style>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container-in {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+h2 {
+  text-align: center;
+  color: #4b24e8;
+  margin-bottom: 20px;
+}
+
+a.add-role-btn {
+  display: inline-block;
+  background-color: #4b24e8;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: background-color 0.3s;
+}
+
+a.add-role-btn:hover {
+  background-color: #3a1cc1;
+}
+
+/* Role kartları */
+.role-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.role-info {
+  min-width: 150px;
+}
+
+.role-info strong {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.role-info small {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.permissions {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.permissions i {
+  font-size: 1.3rem;
+}
+
+.permissions i.text-success {
+  color: #28a745;
+}
+
+.permissions i.text-danger {
+  color: #dc3545;
+}
+
+.role-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.role-actions a {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: white;
+}
+
+.role-actions a.edit {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.role-actions a.edit:hover {
+  background-color: #e0a800;
+}
+
+.role-actions a.delete {
+  background-color: #dc3545;
+}
+
+.role-actions a.delete:hover {
+  background-color: #c82333;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .role-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .permissions {
+    flex-wrap: wrap;
+  }
+
+  .role-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+</style>
+
+
+
+
+<div class="container-in">
   <h2>Roller</h2>
   <a href="{% url 'need:role_create' %}" class="btn btn-primary mb-3">Yeni Rol Ekle</a>
 
@@ -8,62 +140,91 @@
   <!-- Roller -->
   <div class="d-flex flex-column gap-2">
     <div class="row">
-      <div class="col-2  col-md-2 col-lg-2" style="padding-top:50px;">
-    {% for role in roles %}
+      <div class="col-2">
+        <table  class="table table-bordered table-sm">
+         <thead>
+          <tr style="height:50px">
+            <th class="text-center">İsim</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for role in roles %}
 
-      <!-- Sol: İsim -->
-      <div style="min-width:150px; height:50px; flex-shrink:0;">
-        <strong>{{ role.name }}</strong><br>
-        <small class="text-muted">{{ role.slug }}</small>
+            <!-- Sol: İsim -->
+            
+            <tr style="min-width:150px; height:80px; ">
+              <td>
+                <strong>{{ role.name }}</strong><br>
+                <small class="text-muted">{{ role.slug }}</small>
+              </td>
+            </tr>
+
+          {% endfor %}
+        </tbody>
+      </table>
       </div>
 
-    {% endfor %}
-      </div>
-      <div class="col-6  col-md-7  col-lg-8" style="overflow:auto">
+
+      <div class="col-8" style="overflow:auto">
+
+
       <!-- Orta: Scrollable İzinler -->
       <table class="table table-bordered table-sm">
-  <thead>
-    <tr style="height:50px">
-      {% for key, label in permissions %}
-      <th class="text-center">{{ label }}</th>
-      {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for role in roles %}
+        <thead>
+          <tr style="height:50px">
+            {% for key, label in permissions %}
+            <th class="text-center">{{ label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for role in roles %}
 
-    <tr style="height:50px">
-      {% for key, label in permissions %}
-      <td class="text-center">
-        {% if key in role.permissions %}
-        <i class="bi bi-check-lg text-success"></i>
-        {% else %}
-        <i class="bi bi-x-lg text-danger"></i>
-        {% endif %}
-      </td>
-      {% endfor %}
-    </tr>
+          <tr style="height:80px">
+            {% for key, label in permissions %}
+            <td class="text-center">
+              {% if key in role.permissions %}
+              <i class="bi bi-check-lg text-success"></i>
+              {% else %}
+              <i class="bi bi-x-lg text-danger"></i>
+              {% endif %}
+            </td>
+            {% endfor %}
+          </tr>
 
 
 
-    {% endfor %}
-  </tbody>
-</table>
+          {% endfor %}
+        </tbody>
+      </table>
       </div>
-      <div class="col-4 col-md-3 col-lg-2" style="padding-top:50px;">
-    {% for role in roles %}
+      <div class="col-2">
 
-      <!-- Sağ: Buton -->
-      <div style="min-width:100px; height:50px; flex-shrink:0;" class="text-end">
-        <a href="{% url 'need:role_update' role.slug %}" class="btn btn-sm btn-warning">Düzenle</a>
-      <a href="{% url 'need:role_delete' role.slug %}" class="btn btn-sm btn-danger"
-        onclick="return confirm('Silmek istediğinize emin misiniz?')">
-          <i class="bi bi-trash"></i>
-      </a>
-      </div>
+        <table  class="table table-bordered table-sm">
+          <thead>
+            <tr style="height:50px">
+              <th class="text-center">Aksiyon</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for role in roles %}
+
+              <tr style="min-width:100px; height:80px;" class="text-end">
+                <td>
+                  <a href="{% url 'need:role_update' role.slug %}" class="btn btn-sm btn-warning">Düzenle</a>
+                  <a href="{% url 'need:role_delete' role.slug %}" class="btn btn-sm btn-danger"
+                    onclick="return confirm('Silmek istediğinize emin misiniz?')">
+                      <i class="bi bi-trash"></i>
+                  </a>
+                </td>
+              </div>
 
 
-    {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+
+    
       </div>
     </div>
   </div>

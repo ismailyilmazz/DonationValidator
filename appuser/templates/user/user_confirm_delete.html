@@ -1,5 +1,47 @@
 {% extends "need/base.html" %}
 {% block content %}
+
+
+<style>
+button,
+a.btn {
+  height:32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  min-width: 140px;  /* Eşit genişlik */
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  color: white;
+  gap: 6px;
+}
+
+/* Renkler */
+.btn-danger {
+  background-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+</style>
+
+
 <div class="container py-5">
   <h2>Kullanıcı Sil: {{ user_obj.user.username }}</h2>
   <p><strong>Dikkat:</strong> Bu işlem geri alınamaz. Kullanıcıyı ve tüm bilgilerini silmek istediğinize emin misiniz?</p>
@@ -7,6 +49,12 @@
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">Evet, Sil</button>
     <a href="{% url 'user:user_list' %}" class="btn btn-secondary">Vazgeç</a>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
   </form>
 </div>
 {% endblock %}

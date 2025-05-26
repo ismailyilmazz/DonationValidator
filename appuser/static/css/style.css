@@ -1,4 +1,209 @@
-*{
-    margin:0;
-    padding:0;
+/* Temel Sıfırlama */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
+html, body {
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
+    line-height: 1.5;
+}
+a {
+    color: #0d6efd;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* Grid Sistemi */
+.container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -0.5rem;
+}
+[class*="col-"] {
+    padding: 0.5rem;
+}
+.col-1 { flex: 0 0 8.333%; max-width: 8.333%; }
+.col-2 { flex: 0 0 16.666%; max-width: 16.666%; }
+.col-3 { flex: 0 0 25%; max-width: 25%; }
+.col-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+.col-6 { flex: 0 0 50%; max-width: 50%; }
+.col-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+.col-12 { flex: 0 0 100%; max-width: 100%; }
+.col-5 { width: 41.666667%; }
+.col-7 { width: 58.333333%; }
+.col-9 { width: 75%; }
+.col-10 { width: 83.333333%; }
+.col-11 { width: 91.666667%; }
+
+/* Butonlar */
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+.btn-primary {
+    background-color: #0d6efd;
+    color: #fff;
+}
+.btn-primary:hover {
+    background-color: #0b5ed7;
+}
+.btn-outline-primary {
+    border: 1px solid #0d6efd;
+    color: #0d6efd;
+    background: transparent;
+}
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: #fff;
+}
+.btn-success {
+    background-color: #198754;
+    color: #fff;
+}
+.btn-success:hover {
+    background-color: #157347;
+}
+.btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
+.btn-danger:hover {
+    background-color: #bb2d3b;
+}
+.btn-sm {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+}
+.btn-block, .w-100 {
+    width: 100%;
+}
+
+/* Formlar */
+.form-control, .form-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    outline: none;
+}
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+.form-group {
+    margin-bottom: 1rem;
+}
+input[type="checkbox"], input[type="radio"] {
+    margin-right: 0.5rem;
+}
+
+/* Tablolar */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+.table th, .table td {
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+    text-align: left;
+}
+.table th {
+    background-color: #f1f1f1;
+}
+.table-sm th, .table-sm td {
+    padding: 0.5rem;
+}
+
+/* Alertler */
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+.alert-success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+.alert-danger {
+    background-color: #f8d7da;
+    color: #842029;
+}
+.alert-warning {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+.alert-primary {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+/* Yardımcı Sınıflar */
+.text-danger{
+    color:darkred
+}
+.text-center {
+    text-align: center;
+}
+.text-muted {
+    color: #6c757d;
+}
+.mt-3 { margin-top: 1rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.g-2 { gap: 0.5rem; }
+.w-100 { width: 100%; }
+.w-auto { width: auto; }
+
+/* Özel Kart Yapısı */
+
+.list-group{
+    list-style-type: none;
+}
+.section-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.list-group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+}
+
+.list-group-item.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.list-group-item .btn {
+    margin-left: auto; /* Eklenirse, butonu sağa yapıştırır */
+}
+

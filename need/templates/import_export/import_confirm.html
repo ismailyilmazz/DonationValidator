@@ -36,6 +36,12 @@
   </table>
 
   <button type="submit" name="confirm" class="btn btn-success">Onayla ve Kaydet</button>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
 </form>
 
 </div>

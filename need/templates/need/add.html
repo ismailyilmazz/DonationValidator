@@ -50,6 +50,12 @@
   <input type="hidden" name="latitude" id="id_latitude" />
   <input type="hidden" name="longitude" id="id_longitude" />
   <button class="btn btn-primary">Kaydet</button>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
   <script>
     navigator.geolocation.getCurrentPosition(function (position) {
       document.getElementById("id_latitude").value = position.coords.latitude;

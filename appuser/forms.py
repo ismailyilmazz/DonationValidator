@@ -30,6 +30,7 @@ class CustomSetPasswordForm(SetPasswordForm):
 def validate_phone(value):
     if not re.match(r'^[1-9][0-9]{9}$', value):
         raise ValidationError("Telefon numarası 0 ile başlayamaz ve en fazla 10 haneli olmalıdır.")
+    
 
 class ProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=20, label='İsim')
@@ -64,11 +65,25 @@ class ProfileForm(forms.ModelForm):
             field.widget.attrs["class"] = "form-control"
 
     def clean_username(self):
-        username = self.data.get('username') 
+        username = self.cleaned_data.get('username')
         qs = User.objects.filter(username=username).exclude(pk=self.user.pk)
         if qs.exists():
             raise ValidationError("Bu kullanıcı adı zaten kullanımda. Lütfen başka bir kullanıcı adı seçin.")
         return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        qs = User.objects.filter(email=email).exclude(pk=self.user.pk)
+        if qs.exists():
+            raise ValidationError("Bu email zaten kullanımda.")
+        return email
+
+    def clean_tel(self):
+        tel = self.cleaned_data.get('tel')
+        qs = AppUser.objects.filter(tel=tel).exclude(user=self.user)
+        if qs.exists():
+            raise ValidationError("Bu telefon numarası zaten kullanımda.")
+        return tel
 
 
 class AddressForm(forms.Form):
@@ -97,23 +112,46 @@ class AddressForm(forms.Form):
 
 
 
+class RegisterForm(forms.Form):
+    first_name = forms.CharField(max_length=20, label="İsim")
+    last_name = forms.CharField(max_length=20, label="Soyisim")
+    tel = forms.CharField(
+        label="Telefon Numarası",
+        max_length=10,
+        min_length=10,
+        validators=[validate_phone],
+        help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)"
+    )
+    email = forms.EmailField(label="Email")
+    password = forms.CharField(max_length=16, widget=forms.PasswordInput, label="Şifre")
 
-class RegisterForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=20,label="İsim")
-    last_name = forms.CharField(max_length=20,label='Soyisim')
-    tel = forms.CharField(label='Telefon Numarası',max_length=10,min_length=10,validators=[validate_phone],help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
-    email = forms.EmailField()
-    password = forms.CharField(max_length=16,widget=forms.PasswordInput)
+    def clean_tel(self):
+        tel = self.cleaned_data['tel']
+        if User.objects.filter(username=tel).exists():
+            raise forms.ValidationError("Bu telefon numarasıyla kayıtlı bir kullanıcı zaten var.")
+        return tel
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Bu e-posta adresiyle kayıtlı bir kullanıcı zaten var.")
+        return email
 
     def save(self):
         try:
             role = Role.objects.get(slug="user")
         except Role.DoesNotExist:
-            role = Role(name="User", slug="user")
-            role.save(),
-        user = User(username=self.cleaned_data['tel'],first_name = self.cleaned_data['first_name'],last_name = self.cleaned_data['last_name'],email = self.cleaned_data['email'])
+            role = Role.objects.create(name="User", slug="user")
+
+        user = User(
+            username=self.cleaned_data['tel'],
+            first_name=self.cleaned_data['first_name'],
+            last_name=self.cleaned_data['last_name'],
+            email=self.cleaned_data['email']
+        )
         user.set_password(self.cleaned_data['password'])
         user.save()
+
         appuser = AppUser(
             user=user,
             tel=self.cleaned_data['tel'],
@@ -121,42 +159,45 @@ class RegisterForm(forms.ModelForm):
         )
         appuser.save()
 
-
-    class Meta:
-        model = AppUser
-        fields = ['first_name','last_name','tel','email','password']
+        return user
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
 
-class LoginForm(forms.ModelForm):
-    username = forms.CharField(label='Telefon Numarası',help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
-    password = forms.CharField(max_length=16,widget=forms.PasswordInput)
 
-    class Meta:
-        model = AppUser
-        fields = ['username','password']
-    
+
+class LoginForm(forms.Form):  # ModelForm değil Form olsun (User modelini kullanmıyorsun burada)
+    username = forms.CharField(label='Telefon Numarası', help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
+    password = forms.CharField(max_length=16, widget=forms.PasswordInput, label="Şifre")
+
+
     def loginControl(self):
-        username=self.cleaned_data['username']
-        password = self.cleaned_data['password']
-        try:   
-            user = User.objects.get(username=username) 
-            if user.check_password(password):
-                return user
-            else:
-                return None
+        return self.cleaned_data.get('user', None)
 
-        except ObjectDoesNotExist:
-            return None  
-        
+
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        password = cleaned_data.get('password')
+
+        if username and password:
+            try:
+                user = User.objects.get(username=username)
+                if not user.check_password(password):
+                    self.add_error('password', 'Şifre yanlış.')
+                else:
+                    cleaned_data['user'] = user  # Login için view'da kullanabilmek için
+            except User.DoesNotExist:
+                self.add_error('username', 'Kullanıcı bulunamadı.')
+
+        return cleaned_data
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
-
 
 
 class UserForm(forms.ModelForm):

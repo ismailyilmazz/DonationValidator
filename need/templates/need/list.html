@@ -2,6 +2,22 @@
 {% block title %}Liste{% endblock title %}
 {% block content %}
 <style>
+
+  .filter-form{
+    padding:0.5em;
+  }
+  .filter-form>.row {
+    margin-top:1em;
+  }
+  .form-check{
+    margin-top:0.5em;
+    display:flex;
+  }
+  .form-check>.form-check-label{
+    margin:0;
+  }
+
+
   .need-item>div {
     flex-grow: 1
   }
@@ -79,20 +95,10 @@
 
 </style>
 
-{% if messages %}
-{% for message in messages %}
-<div
-  class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
-  role="alert">
-  {{ message }}
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-{% endfor %}
-{% endif %}
 
 <div class="row">
-  <div class="col-md-9">
-    <ul class="list-group" id="needList" >
+  <div class="col-9">
+    <ul class="list-group" style="display:flex; flex-direction:column;" id="needList" >
       {% for need in needs %}
       <li class="list-group-item need-item row"style="display:flex; flex-direction:row;padding:1em">
         <div class="need-date col-1">
@@ -103,12 +109,6 @@
         <div class="need-name col-8">
           <p>{{ need.name }}</p>
           <p style="margin-left:1em"><b>{{ need.kind }}</b></p>
-          {% comment %} {% if need.status == 'donor_find' %}
-            <div class="status-badge status-donor-find">Bağışçı Bulundu</div>
-          {% endif %}
-          {% if need.status == 'publish' %}
-            <div class="status-badge status-publish">Aktif</div>
-          {% endif %} {% endcomment %}
         </div>
 
         <div class="need-actions col-3">
@@ -116,24 +116,15 @@
           <a href="{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/"
             class="btn btn-outline-primary btn-sm">Detay</a>
           {% if "need_delete" in appuser.permissions or need.needy.username == appuser.username %}
-            <a href="delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Sil</a>
+            <a href="delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Sil</a>
           {% endif %}
           </div>
-
-          <!-- Debug info - remove this after testing -->
-          {% comment %} <small style="display: block; color: #666;">
-            Auth: {{ user.is_authenticated|yesno:"Yes,No" }} |
-            User: {{ user.id }} |
-            Needy: {{ need.needy.id }} |
-            Status: {{ need.status }} |
-            Pending: {{ need.has_pending_offer|yesno:"Yes,No" }}
-          </small> {% endcomment %}
 
           {% if user.is_authenticated %}
             {% if need.needy.id != user.id %}
               {% if need.status == 'publish' %}
                 {% if not need.has_pending_offer %}
-                <a href="{% url 'need:offer' need.id %}" class="btn btn-success btn-sm">Bağış Yap</a>
+                <a href="{% url 'need:offer' need.id %}" class="btn w-100 btn-success btn-sm">Bağış Yap</a>
                 {% else %}
                 <span class="btn btn-warning btn-sm disabled">Teklif Var</span>
                 {% endif %}
@@ -181,9 +172,9 @@
     </div>
   </div>
 
-  <div class="col-md-3">
+  <div class="col-3">
 
-    <form method="get" class="row g-2 align-items-center mb-4">
+    <form method="get" class="g-2 align-items-center mb-4 filter-form">
       <h3>Filtre</h3>
       <div class="row mt-2">
         <input type="text" name="q" value="{{ query }}" placeholder="İhtiyaç Ara..." class="form-control">
@@ -206,7 +197,7 @@
               <input class="form-check-input" type="checkbox" name="kind" value="{{ k.slug }}"
                     {% if k.slug in kind_list %}checked{% endif %} id="kind-{{ k.slug }}">
               <label class="form-check-label" for="kind-{{ k.slug }}">
-                {{ k.name }}
+                <span>{{ k.name }}</span>
               </label>
             </div>
           {% endfor %}
@@ -220,6 +211,11 @@
         <a href="/" class="link">Filtreyi temizle</a>
       </div>
       
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
     </form>
 
 

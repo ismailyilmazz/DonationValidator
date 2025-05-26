@@ -8,9 +8,9 @@
         content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width" />
     
     <title>User</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+    {% comment %} <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" /> {% endcomment %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% comment %} <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> {% endcomment %}
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
 
@@ -250,6 +250,33 @@
     </div>
 
 
+    <script>
+         const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/");
+
+        socket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            console.log("Gelen tür:", data.type);
+            console.log("Sunucudan:", data.message);
+        };
+
+        socket.onopen = function () {
+            socket.send(JSON.stringify({ message: "Merhaba!" }));
+        }; 
+
+
+
+        document.addEventListener("keypress", function (e) {
+            console.log("Basılan tuş:", e.key);
+
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: "keypress",
+                    key: e.key
+                }));
+            }
+
+        }); 
+    </script>
 
 
     <script>

@@ -1,11 +1,155 @@
 {% extends "need/base.html" %}
 {% block content %}
-<div class="container py-5">
+<style>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+.container-in {
+  max-width: 1000px;
+  margin: 50px auto;
+  padding: 20px;
+  padding-top:30px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+  color: #4b24e8;
+  margin-bottom: 20px;
+}
+
+/* Arama formu */
+form[role="search"] {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+form[role="search"] input[type="text"] {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+form[role="search"] button {
+  padding: 10px 16px;
+  background-color: #4b24e8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+form[role="search"] button:hover {
+  background-color: #3a1cc1;
+}
+
+/* Kullanıcı listesi */
+ul.list-group {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.list-group li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+ul.list-group li span {
+  display: flex;
+  gap: 8px;
+}
+
+ul.list-group li a {
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  color: white;
+}
+
+ul.list-group li a.btn-info {
+  background-color: #17a2b8;
+}
+
+ul.list-group li a.btn-info:hover {
+  background-color: #138496;
+}
+
+ul.list-group li a.btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+ul.list-group li a.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+ul.list-group li a.btn-danger {
+  background-color: #dc3545;
+}
+
+ul.list-group li a.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 5px;
+}
+
+.pagination li a {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  background-color: #4b24e8;
+  color: white;
+}
+
+.pagination .active a {
+  background-color: #28a745;
+}
+
+.pagination li a:hover {
+  background-color: #3a1cc1;
+}
+</style>
+
+
+
+<div class="container-in py-5">
   <h2>Kullanıcılar</h2>
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+            </div>
+    {% endfor %}
   <form method="get" class="mb-3 d-flex" role="search">
     <input type="text" name="q" value="{{ query }}" placeholder="Ara: username, telefon..." class="form-control me-2">
     <button type="submit" class="btn btn-primary">Ara</button>
-    </form>
+  </form>
   <ul class="list-group">
     {% for user in users %}
     <li class="list-group-item d-flex justify-content-between align-items-center">

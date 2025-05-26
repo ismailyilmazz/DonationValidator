@@ -8,9 +8,9 @@
         content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width" />
     
     <title>User</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+    {% comment %} <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" /> {% endcomment %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% comment %} <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> {% endcomment %}
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
 
@@ -219,7 +219,7 @@
                         <a href="/kinds/" class="nav_link"> <i class="bi nav_icon bi-tags-fill text-danger" ></i> <span class="nav_name text-danger">Kategoriler</span> </a>
                     {% endif %}
                     {% if 'data_import' in user_permissions or 'data_export' in user_permissions %}
-                        <a href="/import-export/" class="nav_link"><i class="bi nav_icon bi-file-earmark-break-fill text-danger" ></i> <span class="nav_name text-danger">İçe - Dışa Aktar</span> </a>
+                        <a href="/import-export-dashboard/" class="nav_link"><i class="bi nav_icon bi-file-earmark-break-fill text-danger" ></i> <span class="nav_name text-danger">İçe - Dışa Aktar</span> </a>
                     {% endif %}
                     {% if 'role_update' in user_permissions or 'role_add' in user_permissions %}
                         <a href="/roles/" class="nav_link"> <i class="bi nav_icon bi-person-vcard-fill text-danger" ></i> <span class="nav_name text-danger">Roller</span> </a>

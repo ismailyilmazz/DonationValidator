@@ -32,10 +32,12 @@ class Role(models.Model):
 
 class AppUser(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
-    tel = models.IntegerField(unique=True)
+    tel = models.IntegerField()
     role = models.ForeignKey(Role,on_delete=models.CASCADE)
     address = models.JSONField(default=list,blank=True,null=True)
     current_address = models.IntegerField(default=0)
+    reset_token = models.CharField(max_length=100, null=True, blank=True)
+    reset_token_expire = models.DateTimeField(null=True, blank=True)
 
     def all_values(self):
         return {

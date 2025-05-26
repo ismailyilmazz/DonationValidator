@@ -2,11 +2,178 @@
 {% block title %}Kayıt Ol{% endblock title %}
 {% block content %}
 
-<form method="POST" style="display:flex;flex-direction:column; gap:1em">
-    {% csrf_token %}
-    {{form}}
-    <button class="btn btn-primary">Kayıt Ol</button>
-    <a href="/user/register/">Giriş Yap</a>
-</form>
+
+
+<style>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.container-in {
+  max-width: 1000px;
+  margin: 50px auto;
+  padding: 20px;
+}
+
+form {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: border-color 0.3s;
+}
+
+form input:focus {
+  border-color: #3f51b5;
+  outline: none;
+}
+
+form .text-danger {
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+form button {
+  background-color: #3f51b5;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+form button:hover {
+  background-color: #303f9f;
+}
+
+form .d-flex {
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+form .d-flex a {
+  font-size: 0.9rem;
+  color: #3f51b5;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+form .d-flex a:hover {
+  color: #303f9f;
+}
+
+.alert {
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.alert-warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .container {
+    margin: 20px;
+  }
+
+  form {
+    padding: 20px;
+  }
+
+  form .d-flex {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+</style>
+
+
+
+
+<div class="container-in py-5">
+  <div class="row justify-content-center">
+    <div class="col-8" style="margin-left:16.6666%;">
+      <form method="POST" class="p-4 border rounded shadow-sm bg-light">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% for field in form %}
+          <div class="mb-3">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+              <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+            {% for error in field.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-success w-100">Kayıt Ol</button>
+
+        <div class="d-flex justify-content-between mt-3">
+          <a href="/user/login/">Zaten bir hesabın var mı? Giriş yap</a>
+        </div>
+
+        {% if messages %}
+          <div class="mt-3">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock content %}

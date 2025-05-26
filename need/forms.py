@@ -68,16 +68,18 @@ class AddNeedForm(forms.ModelForm):
         if user and user.is_authenticated:
             appuser = AppUser.objects.get(user=user)
             appuser = appuser.all_values()
-            self.fields["first_name"].initial = appuser['first_name']
-            self.fields["last_name"].initial = appuser['last_name']
-            try:
-                self.fields["address"].initial = appuser['address'][
-                    appuser['current_address']
-                ]
-            except:
-                pass
+            # Alanları pop ile kaldırıyoruz
+            self.fields.pop("first_name")
+            self.fields.pop("last_name")
             self.fields.pop("tel")
 
+            # Adres varsayılanını koy
+            try:
+                self.fields["address"].initial = appuser['address'][appuser['current_address']]
+            except:
+                pass
+
+        # Her alan için form-control sınıfı
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
 

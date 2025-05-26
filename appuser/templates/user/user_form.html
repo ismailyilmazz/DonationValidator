@@ -1,53 +1,228 @@
 {% extends "need/base.html" %}
 {% block content %}
 <style>
-  .form-material .form-label {
-    font-size: 0.9rem;
-    color: #6c757d;
-    font-weight: 500;
+/* Genel Yapı */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Container */
+.container-in {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Başlıklar */
+h1, h2, h3, h4, h5 {
+  color: #3f51b5;
+  margin-bottom: 15px;
+}
+
+/* Paragraflar ve metin */
+p {
+  margin-bottom: 10px;
+}
+
+/* Formlar */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+form label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 600;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="tel"],
+form textarea,
+form select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: border-color 0.3s;
+}
+
+form input:focus,
+form textarea:focus,
+form select:focus {
+  border-color: #3f51b5;
+  outline: none;
+}
+
+/* Özel form materyal stili */
+.form-material .form-control {
+  border: none;
+  border-bottom: 2px solid #ced4da;
+  border-radius: 0;
+  background-color: transparent;
+  transition: border-color 0.3s;
+  box-shadow: none;
+  padding-left: 0;
+}
+
+.form-material .form-control:focus {
+  border-color: #3f51b5;
+  outline: none;
+}
+
+/* Checkbox ve radio */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #3f51b5;
+}
+
+/* Butonlar */
+button,
+a.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  color: white;
+}
+
+.btn-primary {
+  background-color: #3f51b5;
+}
+
+.btn-primary:hover {
+  background-color: #303f9f;
+}
+
+.btn-success {
+  background-color: #4caf50;
+}
+
+.btn-success:hover {
+  background-color: #43a047;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+  color: white;
+}
+
+.btn-secondary {
+  border: 2px solid #3f51b5;
+  color: #3f51b5;
+  background-color: transparent;
+}
+
+.btn-secondary:hover {
+  background-color: #3f51b5;
+  color: white;
+}
+
+/* Listeler */
+ul.list-group {
+  list-style: none;
+  padding: 0;
+}
+
+ul.list-group li {
+  padding: 12px 16px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* Tablolar */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th, table td {
+  padding: 12px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+table thead {
+  background-color: #3f51b5;
+  color: white;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+
+button,
+a.btn {
+  height:32px  !important;
+  padding:8px 16px 8px 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 120px !important; 
+  border-radius: 8px !important;
+  text-decoration: none !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: background-color 0.3s !important;
+  color: white !important;
+  gap: 6px;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px;
   }
 
-  .form-material .form-control {
-    border: none;
-    border-bottom: 2px solid #ced4da;
-    border-radius: 0;
-    background-color: transparent;
-    transition: border-color 0.3s;
-    box-shadow: none;
+  form {
+    gap: 10px;
   }
-
-  .form-material .form-control:focus {
-    border-color: #3f51b5;
-    box-shadow: none;
-  }
-
-  .card-header {
-    background-color: #3f51b5;
-    color: white;
-  }
-
-  .btn-save {
-    background-color: #4caf50;
-    color: white;
-  }
-
-  .btn-cancel {
-    border-color: #3f51b5;
-    color: #3f51b5;
-  }
-
-  .btn-cancel:hover {
-    background-color: #3f51b5;
-    color: white;
-  }
-
-  .error-text {
-    font-size: 0.8rem;
-    color: #e53935;
-  }
+}
 </style>
 
-<div class="container py-5">
+
+
+<div class="container-in py-5">
   <div class="row justify-content-center">
     <div class="col-lg-8">
       <div class="card shadow-sm border-0">
@@ -60,14 +235,14 @@
 
             <h5 class="mb-3">Kullanıcı Bilgileri</h5>
             <div class="row g-4">
-              <div class="col-md-6">
+              <div class="col-6">
                 <label class="form-label">{{ user_form.first_name.label }}</label>
                 {{ user_form.first_name }}
                 {% if user_form.first_name.errors %}
                 <div class="error-text">{{ user_form.first_name.errors }}</div>
                 {% endif %}
               </div>
-              <div class="col-md-6">
+              <div class="col-6">
                 <label class="form-label">{{ user_form.last_name.label }}</label>
                 {{ user_form.last_name }}
                 {% if user_form.last_name.errors %}
@@ -116,6 +291,11 @@
               </a>
             </div>
 
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    </div>
+            {% endfor %}
           </form>
         </div>
       </div>

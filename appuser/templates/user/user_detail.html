@@ -1,6 +1,65 @@
 {% extends "need/base.html" %}
 {% block content %}
-<div class="container py-5">
+
+<style>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+.container-in {
+  max-width: 1000px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+  color: #4b24e8;
+  margin-bottom: 20px;
+}
+
+ul.list-group {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul.list-group li {
+  padding: 12px 16px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+ul.list-group li strong {
+  color: #333;
+}
+
+a.btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  background-color: #6c757d;
+  transition: background-color 0.3s;
+}
+
+a.btn:hover {
+  background-color: #5a6268;
+}
+</style>
+
+
+<div class="container-in py-5">
   <h2>Kullanıcı Detay: {{ user_obj.user.username }}</h2>
   <ul class="list-group">
     <li class="list-group-item"><strong>Ad:</strong> {{ user_obj.user.first_name }}</li>

@@ -1,7 +1,85 @@
 {% extends "need/base.html" %}
 {% block content %}
+
+<style>
+  h2{
+    margin-bottom:1em;
+  }
+  form .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+form .col {
+  flex: 1 1 0;
+  min-width: 150px;
+}
+
+form .col-auto {
+  flex: 0 0 auto;
+}
+
+form label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+  color: #333;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border-color 0.3s;
+}
+
+form input:focus,
+form textarea:focus {
+  border-color: #4b24e8;
+  outline: none;
+}
+
+/* Buton stili */
+form button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+form button:hover {
+  background-color: #218838;
+}
+
+/* Responsive destek */
+@media (max-width: 600px) {
+  form .row {
+    flex-direction: column;
+  }
+
+  form .col,
+  form .col-auto {
+    width: 100%;
+  }
+
+  form button {
+    width: 100%;
+    text-align: center;
+  }
+}
+</style>
+
 <div class="container py-5">
-  <h2>Kind Listesi</h2>
+  <h2>Kategori Listesi</h2>
 
   <form method="POST" class="mb-4">
     {% csrf_token %}
