@@ -1,28 +1,8 @@
 {% extends "need/base.html" %}
 {% block content %}
 <style>
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f5f5;
-  margin: 0;
-  padding: 0;
-}
 
-.container-in {
-  max-width: 1000px;
-  margin: 50px auto;
-  padding: 20px;
-  padding-top:30px;
-  background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
 
-h2 {
-  text-align: center;
-  color: #4b24e8;
-  margin-bottom: 20px;
-}
 
 /* Arama formu */
 form[role="search"] {
@@ -50,62 +30,6 @@ form[role="search"] button {
 
 form[role="search"] button:hover {
   background-color: #3a1cc1;
-}
-
-/* Kullanıcı listesi */
-ul.list-group {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-ul.list-group li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-ul.list-group li span {
-  display: flex;
-  gap: 8px;
-}
-
-ul.list-group li a {
-  padding: 6px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.9rem;
-  color: white;
-}
-
-ul.list-group li a.btn-info {
-  background-color: #17a2b8;
-}
-
-ul.list-group li a.btn-info:hover {
-  background-color: #138496;
-}
-
-ul.list-group li a.btn-warning {
-  background-color: #ffc107;
-  color: #212529;
-}
-
-ul.list-group li a.btn-warning:hover {
-  background-color: #e0a800;
-}
-
-ul.list-group li a.btn-danger {
-  background-color: #dc3545;
-}
-
-ul.list-group li a.btn-danger:hover {
-  background-color: #c82333;
 }
 
 /* Pagination */

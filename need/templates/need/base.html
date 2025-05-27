@@ -250,33 +250,6 @@
     </div>
 
 
-    <script>
-         const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/");
-
-        socket.onmessage = function (e) {
-            const data = JSON.parse(e.data);
-            console.log("Gelen tür:", data.type);
-            console.log("Sunucudan:", data.message);
-        };
-
-        socket.onopen = function () {
-            socket.send(JSON.stringify({ message: "Merhaba!" }));
-        }; 
-
-
-
-        document.addEventListener("keypress", function (e) {
-            console.log("Basılan tuş:", e.key);
-
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    type: "keypress",
-                    key: e.key
-                }));
-            }
-
-        }); 
-    </script>
 
 
     <script>

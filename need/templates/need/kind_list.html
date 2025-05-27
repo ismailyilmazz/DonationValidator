@@ -21,29 +21,6 @@ form .col-auto {
   flex: 0 0 auto;
 }
 
-form label {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: 600;
-  color: #333;
-}
-
-form input[type="text"],
-form input[type="email"],
-form input[type="password"],
-form textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  transition: border-color 0.3s;
-}
-
-form input:focus,
-form textarea:focus {
-  border-color: #4b24e8;
-  outline: none;
-}
 
 /* Buton stili */
 form button {
@@ -115,7 +92,7 @@ form button:hover {
       <tr>
         <td>{{ kind.name }}</td>
         <td>{{ kind.slug }}</td>
-        <td>
+        <td style="width:120px;">
           <a href="{% url 'need:kind_update' kind.slug %}" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
           <a href="{% url 'need:kind_delete' kind.slug %}" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
           {% comment %} <a href="{% url 'need:kind_delete' kind.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğine emin misin?');">Sil</a> {% endcomment %}

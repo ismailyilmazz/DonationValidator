@@ -3,29 +3,6 @@
 
 
 <style>
-/* Genel yapı */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
-}
-
-/* Container */
-.container-in {
-  max-width: 1000px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-}
-
-/* Başlık */
-h2 {
-  text-align: center;
-  color: #3f51b5;
-  margin-bottom: 20px;
-}
 
 /* Arama formu */
 form.d-flex {
@@ -54,13 +31,11 @@ form.d-flex button:hover {
   background-color: #303f9f;
 }
 
-/* Tümünü Seç Alanı */
 form .form-check-label {
   cursor: pointer;
   font-size: 0.95rem;
   color: #555;
 }
-
 /* Tablo */
 .table-responsive {
   margin-top: 20px;
@@ -92,37 +67,6 @@ tr:nth-child(even) {
   accent-color: #3f51b5;
 }
 
-/* Seçilenleri Ata Butonu */
-button.btn-success {
-  background-color: #4caf50;
-  color: white;
-  min-width: 200px;
-  padding: 10px 16px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  transition: background-color 0.3s;
-}
-
-button.btn-success:hover {
-  background-color: #43a047;
-}
-
-/* Küçük Butonlar */
-.btn-outline-info {
-  padding: 6px 12px;
-  border: 2px solid #17a2b8;
-  color: #17a2b8;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  text-decoration: none;
-  transition: background-color 0.3s;
-}
-
-.btn-outline-info:hover {
-  background-color: #17a2b8;
-  color: white;
-}
 
 /* Pagination */
 .pagination {
@@ -187,7 +131,7 @@ button.btn-success:hover {
 <div class="container-in py-4">
     <h2>Taşıyıcı Bekleyen İhtiyaçlar</h2>
 
-    <form method="get" class="d-flex gap-2 mb-3">
+    <form method="get" class="d-flex gap-2 mb-3" style="flex-direction:row;">
         <input type="text" name="q" class="form-control" placeholder="Adres ara..." value="{{ query }}">
         <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>

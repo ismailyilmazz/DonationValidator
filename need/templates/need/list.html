@@ -224,6 +224,10 @@
 
 <script>
   const socket = new WebSocket("ws://" + window.location.host + "/ws/chat/");
+        socket.onopen = function () {
+            socket.send(JSON.stringify({ message: "Merhaba!" }));
+        }; 
+
   socket.onmessage = function (e) {
     const data = JSON.parse(e.data);
     console.log(data);

@@ -18,18 +18,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
-    async def receive(self, text_data):        
-        data = json.loads(text_data)
-        key = data.get("key")
-
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                "type": "broadcast_keypress",
-                "key": key
-            }
-        )
-
     async def new_need_added(self, event):
         await self.send(text_data=json.dumps({
             "type": "new_need",
