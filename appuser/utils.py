@@ -14,13 +14,13 @@ def permission_required_any(*perms):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
             if not request.user.is_authenticated:
-                return redirect('/user/login')  # Giriş yapmamış kullanıcılar için
+                return redirect('/user/login') 
             try:
                 permissions = AppUser.objects.get(user=request.user).all_values()['permissions']
                 if anyhave(permissions,perms):
                     return view_func(request, *args, **kwargs)
             except AttributeError:
                 pass
-            return redirect('/unauthorized')  # Yetkisi olmayanlar için
+            return redirect('/unauthorized')
         return wrapper
     return decorator

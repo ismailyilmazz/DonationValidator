@@ -133,30 +133,24 @@ def profile_view(request):
 
     appuser = AppUser.objects.get(user=request.user)
 
-    # Kullanıcının ihtiyaçları
     user_needs = list(Need.objects.filter(needy=request.user).order_by('-created'))
     delivered_needs = [n for n in user_needs if n.status == 'completed']
     other_needs = [n for n in user_needs if n.status != 'completed']
     user_needs = other_needs + delivered_needs
 
-    # Kullanıcının teklifleri
     user_offers = Offer.objects.filter(donor=request.user).order_by('-created')
 
-    # Kullanıcı bilgileri (AppUser JSON)
     user_dict = appuser.all_values()
 
-    # Adresler için kullanılacak ihtiyaçlar
     needs = Need.objects.filter(needy=request.user)
     get_month_name(needs)
 
-    # Formu oluştur
     form = ProfileForm(user=request.user)
 
     if request.method == 'POST':
         if 'profile_update' in request.POST:
             form = ProfileForm(request.POST, user=request.user)
             if form.is_valid():
-                # User modelini güncelle
                 user = request.user
                 user.first_name = form.cleaned_data['first_name']
                 user.last_name = form.cleaned_data['last_name']
@@ -164,11 +158,10 @@ def profile_view(request):
                 user.email = form.cleaned_data['email']
                 user.save()
 
-                # AppUser modelini güncelle
                 appuser.tel = form.cleaned_data['tel']
                 appuser.save()
 
-                login(request, user=user)  # Kullanıcıyı tekrar login et
+                login(request, user=user) 
                 messages.success(request, "Profil başarıyla güncellendi.")
                 return redirect('/user/profile/')
             else:

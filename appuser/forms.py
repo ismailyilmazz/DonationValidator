@@ -168,7 +168,7 @@ class RegisterForm(forms.Form):
 
 
 
-class LoginForm(forms.Form):  # ModelForm değil Form olsun (User modelini kullanmıyorsun burada)
+class LoginForm(forms.Form): 
     username = forms.CharField(label='Telefon Numarası', help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
     password = forms.CharField(max_length=16, widget=forms.PasswordInput, label="Şifre")
 
@@ -188,7 +188,7 @@ class LoginForm(forms.Form):  # ModelForm değil Form olsun (User modelini kulla
                 if not user.check_password(password):
                     self.add_error('password', 'Şifre yanlış.')
                 else:
-                    cleaned_data['user'] = user  # Login için view'da kullanabilmek için
+                    cleaned_data['user'] = user 
             except User.DoesNotExist:
                 self.add_error('username', 'Kullanıcı bulunamadı.')
 

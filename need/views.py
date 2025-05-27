@@ -422,7 +422,6 @@ def kind_delete(request, slug):
         kind.delete()
         messages.success(request, f"{kind.name} başarıyla silindi.")
         return redirect('need:kind_list')
-
     return render(request, 'need/kind_confirm_delete.html', {'kind': kind})
 
 
