@@ -216,7 +216,7 @@ class ChangePasswordForm(forms.Form):
 
 
 class LoginForm(forms.Form): 
-    username = forms.CharField(label='Telefon Numarası', help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
+    username = forms.CharField(label='Kullanıcı Adı: (Yeni kullanıcılar için; kullanıcı adı, telefon numarasıdır.)', help_text="Lütfen 0 ile başlamayan 10 haneli bir numara girin. (örn: 5312345678)")
     password = forms.CharField(max_length=16, widget=forms.PasswordInput, label="Şifre")
 
 
