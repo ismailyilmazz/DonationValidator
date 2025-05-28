@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect, get_object_or_404
-from .forms import RegisterForm, LoginForm, ProfileForm,UserForm,AppUserForm,AddressForm
+from .forms import RegisterForm, LoginForm, ProfileForm,UserForm,AppUserForm,AddressForm,ChangePasswordForm
 from django.contrib.auth import login,logout
 from .models import AppUser
 from need.models import Need, Offer
@@ -29,7 +29,7 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 
 
-
+# Şifremi unuttum sayfası
 def request_password_reset(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -57,7 +57,7 @@ def request_password_reset(request):
 
     return render(request, "user/request_password_reset.html")
 
-
+# Şifremi unuttumdan sonra tekrar şifre girme sayfası
 def reset_password(request, token):
     try:
         appuser = AppUser.objects.get(reset_token=token, reset_token_expire__gt=timezone.now())
@@ -86,16 +86,19 @@ def reset_password(request, token):
 
 
 
-
+#LOGOUT
 def logout_view(request):
     logout(request)
     return redirect('/user/login/')
 
+# Logout Cofirm
 @login_required
 def logout_confirm_view(request):
     return render(request, 'user/logout_confirm.html')
 
 ########## USER #############
+
+#Register Sayfası
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -110,7 +113,7 @@ def register_view(request):
 
     return render(request, 'user/register.html', {'form': form})
 
-
+# Login Sayfası
 def login_view(request):
     if not request.user.is_authenticated:
         if request.method == 'POST':
@@ -127,6 +130,25 @@ def login_view(request):
         return render(request,'user/login.html',{'form':form})
     return redirect('/user/profile/')
 
+# Şifre Değiştirme
+
+@login_required
+def change_password_view(request):
+    appuser = AppUser.objects.get(user=request.user)
+    tel = str(appuser.tel)
+
+    if request.method == 'POST':
+        form = ChangePasswordForm(request.POST, user=request.user, tel=tel)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Şifreniz başarıyla değiştirildi.")
+            return redirect('/user/profile')  # Profil sayfasına dön
+    else:
+        form = ChangePasswordForm(user=request.user, tel=tel)
+
+    return render(request, 'user/change_password.html', {'form': form})
+
+# User Profile Sayfası
 def profile_view(request):
     if not request.user.is_authenticated:
         return redirect('/user/login/')
@@ -204,6 +226,7 @@ def profile_view(request):
 
 #################################
 
+# Adres silme 
 @login_required
 def delete_address(request, index):
     appuser = get_object_or_404(AppUser, user=request.user)
@@ -224,7 +247,7 @@ def delete_address(request, index):
     return redirect('user:profile')
 
 
-
+# Hesap Özeti Sayfası
 @login_required
 def account_summary_view(request):
     appuser = AppUser.objects.get(user=request.user)
@@ -239,10 +262,14 @@ def stk_page_view(request):
     return render(request, 'user/stk_page.html')
 
 
+
+
+
+
 ############ USER MANAGEMENT ##################
 
 
-
+# Userların listelenmesi (Read)
 @permission_required_any('user_information', 'user_delete')
 def user_list(request):
     query = request.GET.get('q', '')
@@ -253,16 +280,18 @@ def user_list(request):
         ) | users.filter(
             tel__icontains=query
         )
-    paginator = Paginator(users, 10)  # 10 user per page
+    paginator = Paginator(users, 10) 
     page = request.GET.get('page')
     users = paginator.get_page(page)
     return render(request, 'user/user_list.html', {'users': users, 'query': query})
 
+# User'ın detayları (Read)
 @permission_required_any('user_information', 'user_delete')
 def user_detail(request, username):
     user = get_object_or_404(AppUser, user__username=username)
     return render(request, 'user/user_detail.html', {'user_obj': user})
 
+# Userın bilgi güncellemesi (UPDATE)
 @permission_required_any('user_update', 'user_information')
 def user_update(request, username):
     app_user = get_object_or_404(AppUser, user__username=username)
@@ -278,6 +307,7 @@ def user_update(request, username):
         appuser_form = AppUserForm(instance=app_user)
     return render(request, 'user/user_form.html', {'user_form': user_form, 'appuser_form': appuser_form})
 
+# Userın silinmesi (Delete)
 @permission_required_any('user_delete')
 def user_delete(request, username):
     app_user = get_object_or_404(AppUser, user__username=username)

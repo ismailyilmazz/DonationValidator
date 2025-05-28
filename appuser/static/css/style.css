@@ -42,56 +42,68 @@ a:hover {
 .col-1 {
     flex: 0 0 8.333%;
     max-width: 8.333%;
+    margin:0 auto;
 }
 
 .col-2 {
     flex: 0 0 16.666%;
     max-width: 16.666%;
+    margin:0 auto;
 }
 
 .col-3 {
     flex: 0 0 25%;
     max-width: 25%;
+    margin:0 auto;
 }
 
 .col-4 {
     flex: 0 0 33.333%;
     max-width: 33.333%;
+    margin:0 auto;
 }
 
 .col-6 {
     flex: 0 0 50%;
     max-width: 50%;
+    margin:0 auto;
 }
 
 .col-8 {
     flex: 0 0 66.666%;
     max-width: 66.666%;
+    margin:0 auto;
 }
 
 .col-12 {
     flex: 0 0 100%;
     max-width: 100%;
+    margin:0 auto;
 }
 
 .col-5 {
     width: 41.666667%;
+    margin:0 auto;
 }
 
 .col-7 {
     width: 58.333333%;
+    margin:0 auto;
 }
 
 .col-9 {
     width: 75%;
+    margin:0 auto;
 }
 
 .col-10 {
     width: 83.333333%;
+    margin:0 auto;
 }
 
 .col-11 {
     width: 91.666667%;
+    margin:0 auto;
 }
 
 /* Butonlar */
@@ -165,6 +177,22 @@ a:hover {
 .btn-outline-info:hover {
     background-color: #0dcaf0 !important;
     color: #fff !important;
+}
+.btn-outline-success {
+    color: #28a745 !important;
+    border: 2px solid #28a745 !important;
+    background-color: transparent !important;
+    border-radius: 0.5rem !important;
+    font-weight: bold !important;
+    transition: all 0.3s ease-in-out !important;
+}
+
+.btn-outline-success:hover {
+    color: white !important;
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.4) !important;
+    transform: translateY(-2px) !important;
 }
 
 

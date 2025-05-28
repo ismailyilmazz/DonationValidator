@@ -6,12 +6,10 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.contrib.auth import login
 from appuser.models import AppUser,Role
-from django.template.defaultfilters import slugify
 from django.http import StreamingHttpResponse
 import csv
-from .forms import NeedImportForm,KindForm
-from django.contrib.auth.decorators import user_passes_test, login_required
-from django.utils.dateparse import parse_datetime, parse_date
+from .forms import KindForm
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .utils import permission_required
 from django.utils.timezone import now, timedelta
@@ -21,15 +19,19 @@ from django.db.models import Q
 from datetime import datetime, timedelta
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from appuser.utils import create_username, add_control
+import random
 
 # Create your views here.
 
+# Ay isminin Türkçeleştirilmesi index -> Türkçe
 def get_month_name(needs):
     months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık']
     for need in needs:
         need.month_name = months[need.created.month-1]
 
-        
+
+# detail page (Need'in detayları)
 def detail_view(request, year, month, day, slug):
     try:
         need = Need.objects.get(created__year=year, created__month=month, created__day=day, slug=slug)
@@ -59,7 +61,7 @@ def detail_view(request, year, month, day, slug):
                         else:
                             messages.error(request, "Geçersiz kod. Lütfen kontrol edin.")
 
-            # Teslimat seçimi formu (self / courier)
+            # Teslimat seçimi formu (kendim / taşıyıcı)
             if need.donor == request.user and need.status == 'donor_find':
                 show_form = True
                 form = DeliveryForm(request.POST or None)
@@ -101,6 +103,8 @@ def detail_view(request, year, month, day, slug):
     except ObjectDoesNotExist:
         return render(request, 'need/detail.html', {'need': None})
 
+
+# Teslimat kodu oluşturucu
 @login_required
 def generate_code(request, year, month, day, slug):
     need = get_object_or_404(Need, created__year=year, created__month=month, created__day=day, slug=slug)
@@ -114,8 +118,7 @@ def generate_code(request, year, month, day, slug):
         messages.error(request, "Kod sadece taşımada olan ihtiyaçlar için oluşturulabilir.")
         return redirect(need.get_absolute_url())
 
-    # Kod oluştur
-    import random
+    # Kod oluşturma
     code = str(random.randint(100000, 999999))
     offer.code = code
     offer.save()
@@ -123,7 +126,7 @@ def generate_code(request, year, month, day, slug):
 
     return redirect(need.get_absolute_url())
 
-
+# Need silmek için (permission kontrolü yapılır)
 def delete_need(request,year,month,day,slug):
     try:
         if request.user.is_authenticated:
@@ -136,7 +139,7 @@ def delete_need(request,year,month,day,slug):
             return redirect("/")
     
 
-
+# liste sayfasının view'ı
 def list_view(request):
     needs = Need.publish.all()
     query = request.GET.get('q', '')
@@ -189,18 +192,7 @@ def list_view(request):
     })
 
 
-
-def create_username(firstname):
-    username = slugify(firstname)
-    counter = 0
-    while User.objects.filter(username = username+str(counter)).exists():
-        counter +=1
-    return username+str(counter)
-
-def add_control(tel):
-    if AppUser.objects.filter(tel=tel).exists():
-        raise ValidationError('Telefon numarası zaten kayıtlı. Lütfen giriş yapınız.')
-
+# Need ekleme sayfası view'ı
 def add_view(request):
     if request.method == "POST":
         form = AddNeedForm(request.POST,user = request.user if request.user.is_authenticated else None)
@@ -247,6 +239,8 @@ def add_view(request):
                                        role=role,
                                        address=[address] if address else [],
                                         current_address=0 if address else -1,)
+                
+                messages.success(request, f"Kullanıcı adınız:{user.username}, Şifreniz:{tel}")
                 login(request=request,user=user)
                 need = Need(latitude=latitude,longitude=longitude,name=name,kind=kind,needy=user,address=address)
                 need.save()
@@ -281,9 +275,14 @@ def add_view(request):
             form = AddNeedForm()
     return render(request,'need/add.html',{'form':form})
 
-################ COURIER ######################
 
 
+
+
+
+################ COURIER  (Taşıyıcı yetkisine sahip kişiler erişebilir) ######################
+
+# Taşıyıcı bekleyen ihtiyaçların listelenmesi
 @login_required
 def courier_request_list(request):
     appuser = AppUser.objects.get(user=request.user).all_values()
@@ -326,6 +325,7 @@ def courier_request_list(request):
     })
 
 
+# Taşıyıcının taşıma durumunda olan ihtiyaçlarının listelenmesi
 @login_required
 def my_courier_needs(request):
     appuser = AppUser.objects.get(user=request.user).all_values()
@@ -364,8 +364,13 @@ def my_courier_needs(request):
 #################################################
 
 
-############## KIND  ##########################33#
 
+
+
+############## KIND  (kategori yetkisine sahip kişiler erişebilir) ##########################33#
+
+
+# Kategorilerin listelenmesi (Read and Create)
 def kind_list(request):
     if not request.user.is_authenticated:
         return render(request,'need/unauthorized.html')
@@ -384,7 +389,7 @@ def kind_list(request):
 
     return render(request, 'need/kind_list.html', {'kinds': kinds, 'form': form})
 
-
+# Kategorinin güncellenmesi (Update)
 def kind_update(request, slug):
     if not request.user.is_authenticated:
         return render(request,'need/unauthorized.html')
@@ -403,7 +408,7 @@ def kind_update(request, slug):
     return render(request, 'need/kind_form.html', {'form': form})
 
 
-
+# Kategorinin Silinmesi (Delete)
 def kind_delete(request, slug):
     if not request.user.is_authenticated:
         return render(request, 'need/unauthorized.html')
@@ -429,11 +434,14 @@ def kind_delete(request, slug):
 ########################################
 
 
-############## ROLE #####################
 
 
 
+############## ROLE  (rol yetkisine sahip kişiler erişebilir) #####################
 
+
+
+# Rol Ekleme (Create)
 @permission_required('role_add')
 def role_create(request):
     if request.method == 'POST':
@@ -445,6 +453,7 @@ def role_create(request):
         form = RoleForm()
     return render(request, 'role/role_form.html', {'form': form})
 
+# Rol güncelleme (Update)
 @permission_required('role_update')
 def role_update(request, slug):
     role = get_object_or_404(Role, slug=slug)
@@ -457,6 +466,7 @@ def role_update(request, slug):
         form = RoleForm(instance=role)
     return render(request, 'role/role_form.html', {'form': form})
 
+# Rol Listeleme (Read)
 @permission_required('role_add')
 def role_list(request):
     roles = Role.objects.all()
@@ -464,6 +474,7 @@ def role_list(request):
     return render(request, 'role/role_list.html', {'roles': roles, 'permissions': permissions})
 
 
+# Rol Silme (Delete)
 @permission_required('role_delete')
 def role_delete(request, slug):
     role = get_object_or_404(Role, slug=slug)
@@ -480,11 +491,16 @@ def role_delete(request, slug):
 
 #######################################
 
+
+
+
+# Yetkisiz Sayfası
 def unauthorized_view(request):
     return render(request,'need/unauthorized.html')
 
 
 
+## Offer (Teklif) sayfası
 @login_required
 def offer_view(request, need_id):
     need = get_object_or_404(Need, id=need_id, status='publish')
@@ -542,9 +558,15 @@ def is_admin(user):
     return user.is_staff or user.is_superuser
 
 
-########## IMOPORT EXPORT ########################
 
 
+
+
+
+########## IMOPORT EXPORT (Import-Export yetkisi olan görebilir) ########################
+
+
+# EXPORT anasayfası (istenirse filtrelenebilir) 
 @login_required
 @permission_required('data_export')
 def export_needs(request):
@@ -576,6 +598,7 @@ def export_needs(request):
 
 
 
+# Import (Sadece alır okur ve oturuma yazar [listelenmek için])
 @login_required
 @permission_required('data_import')
 def import_needs(request):
@@ -588,7 +611,6 @@ def import_needs(request):
         decoded = csv_file.read().decode('utf-8-sig').splitlines()
         reader = csv.DictReader(decoded)
 
-        # Sadece name, address, kind alınacak
         preview_list = []
         for row in reader:
             preview_list.append({
@@ -602,6 +624,10 @@ def import_needs(request):
 
     return render(request, 'import_export/import_needs.html')
 
+
+
+
+# IMPORT Listelenir düzenlemeler sonrası veritabanına yazar
 @login_required
 @permission_required('data_import')
 def import_confirm(request):
@@ -643,12 +669,14 @@ def import_confirm(request):
 
 
 
+
+
+# EXPORT filtrelenmiş veyahut filtrelenmemiş istekleri csv'ye dönüştürür ve dışa aktarır
 @login_required
 @permission_required('data_export')
 def import_export_dashboard(request):
     needs = Need.objects.exclude(status='completed')
 
-    # Filtreleme
     name_query = request.GET.get('name', '')
     if name_query:
         needs = needs.filter(name__icontains=name_query)

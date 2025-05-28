@@ -68,12 +68,12 @@ class AddNeedForm(forms.ModelForm):
         if user and user.is_authenticated:
             appuser = AppUser.objects.get(user=user)
             appuser = appuser.all_values()
-            # Alanları pop ile kaldırıyoruz
+            # Görünmesine gerek olmayan inputların kaldırılması
             self.fields.pop("first_name")
             self.fields.pop("last_name")
             self.fields.pop("tel")
 
-            # Adres varsayılanını koy
+            # adres alanını doldur
             try:
                 self.fields["address"].initial = appuser['address'][appuser['current_address']]
             except:
@@ -173,7 +173,7 @@ class OfferForm(forms.ModelForm):
 class BulkCourierForm(forms.Form):
     needs = forms.MultipleChoiceField(
         widget=forms.CheckboxSelectMultiple,
-        choices=[],  # View'da dinamik olarak eklenecek
+        choices=[],
         required=True,
         label="Taşıyıcı Olarak Atanacak İhtiyaçlar"
     )

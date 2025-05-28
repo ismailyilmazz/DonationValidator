@@ -1,6 +1,10 @@
 from .models import AppUser
 from django.shortcuts import redirect
 from functools import wraps
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.template.defaultfilters import slugify
+
 
 def anyhave(a,b):
     for per in b:
@@ -8,6 +12,18 @@ def anyhave(a,b):
             return True
     return False
 
+
+
+def add_control(tel):
+    if AppUser.objects.filter(tel=tel).exists():
+        raise ValidationError('Telefon numarası zaten kayıtlı. Lütfen giriş yapınız.')
+
+def create_username(firstname):
+    username = slugify(firstname)
+    counter = 0
+    while User.objects.filter(username = username+str(counter)).exists():
+        counter +=1
+    return username+str(counter)
 
 def permission_required_any(*perms):
     def decorator(view_func):

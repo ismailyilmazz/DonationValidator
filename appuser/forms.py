@@ -1,7 +1,7 @@
 from django import forms
 import re
 from .models import AppUser, Role
-from django.core.exceptions import ValidationError,ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import SetPasswordForm
 
@@ -165,6 +165,53 @@ class RegisterForm(forms.Form):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
+
+
+
+class ChangePasswordForm(forms.Form):
+    old_password = forms.CharField(
+        label='Eski Şifre',
+        widget=forms.PasswordInput,
+        required=False
+    )
+    new_password1 = forms.CharField(
+        label='Yeni Şifre',
+        widget=forms.PasswordInput
+    )
+    new_password2 = forms.CharField(
+        label='Yeni Şifre (Tekrar)',
+        widget=forms.PasswordInput
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user')
+        self.tel = kwargs.pop('tel')
+        super().__init__(*args, **kwargs)
+
+        # Kullanıcının şifresi tel'e eşitse eski şifreyi sorulmaz
+        if self.user.check_password(self.tel):
+            self.fields.pop('old_password')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('new_password1')
+        password2 = cleaned_data.get('new_password2')
+        if password1 != password2:
+            raise forms.ValidationError("Yeni şifreler eşleşmiyor.")
+        return cleaned_data
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data.get('old_password')
+        if old_password and not self.user.check_password(old_password):
+            raise forms.ValidationError("Eski şifre yanlış.")
+        return old_password
+
+    def save(self, commit=True):
+        password = self.cleaned_data['new_password1']
+        self.user.set_password(password)
+        if commit:
+            self.user.save()
+        return self.user
 
 
 
