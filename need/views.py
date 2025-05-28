@@ -239,7 +239,8 @@ def add_view(request):
                 except Role.DoesNotExist:
                     role = Role(name="User", slug="user")
                     role.save()
-                user = User(username=create_username(firstname=first_name),password=tel,first_name=first_name,last_name=last_name)
+                user = User(username=create_username(firstname=first_name),first_name=first_name,last_name=last_name)
+                user.set_password(tel)
                 user.save()
                 AppUser.objects.create(tel=tel,
                                        user=user,
@@ -543,23 +544,6 @@ def is_admin(user):
 
 ########## IMOPORT EXPORT ########################
 
-
-# def export_offers(request):
-#     if not request.user.is_authenticated:
-#         return render(request,"need/unauthorized.html",{"path":"/user/login"})
-#     if Role.objects.filter(name="User").contains(AppUser.objects.get(user=request.user).all_values()['role']):
-#         return render(request,"need/unauthorized.html",{"path":"/user/login"})
-
-#     header = ['id', 'need_id', 'donor_name', 'status', 'created_at']
-#     rows = Offer.objects.values_list('id', 'need_id', 'donor__username', 'status', 'created')
-#     def row_gen():
-#         yield '\ufeff' + ','.join(header) + '\n'
-#         for row in rows:
-#             yield ','.join(str(item) for item in row) + '\n'
-
-#     resp = StreamingHttpResponse(row_gen(), content_type="text/csv; charset=utf-8")
-#     resp['Content-Disposition'] = 'attachment; filename="offers.csv"'
-#     return resp
 
 @login_required
 @permission_required('data_export')

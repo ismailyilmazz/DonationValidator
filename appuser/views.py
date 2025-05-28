@@ -95,7 +95,7 @@ def logout_view(request):
 def logout_confirm_view(request):
     return render(request, 'user/logout_confirm.html')
 
-
+########## USER #############
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -201,6 +201,8 @@ def profile_view(request):
             'user_offers': user_offers,
         }
     )
+
+#################################
 
 @login_required
 def delete_address(request, index):
