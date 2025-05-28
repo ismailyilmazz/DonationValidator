@@ -105,12 +105,10 @@
           <p>{{ need.created.day }}</p>
           <p><b>{{ need.month_name }}</b></p>
         </div>
-
         <div class="need-name col-8">
           <p>{{ need.name }}</p>
           <p style="margin-left:1em"><b>{{ need.kind }}</b></p>
         </div>
-
         <div class="need-actions col-3">
           <div class="col" style="display:flex;align-items:center;justify-content:space-around; ">
           <a href="{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/"
@@ -119,7 +117,6 @@
             <a href="delete/{{ need.created.year }}/{{ need.created.month }}/{{ need.created.day }}/{{ need.slug }}/" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Sil</a>
           {% endif %}
           </div>
-
           {% if user.is_authenticated %}
             {% if need.needy.id != user.id %}
               {% if need.status == 'publish' %}
@@ -136,7 +133,6 @@
             {% endif %}
             {% else %}
           {% endif %}
-
           {% if need.status == 'donor_find' %}
           <span class="btn btn-secondary btn-sm disabled">Beklemede</span>
           {% endif %}
